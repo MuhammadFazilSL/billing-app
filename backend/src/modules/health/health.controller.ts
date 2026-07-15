@@ -1,0 +1,21 @@
+import { Controller, Get } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+
+@ApiTags('Diagnostics')
+@Controller('health')
+export class HealthController {
+  @Get()
+  @ApiOperation({ summary: 'Backend Diagnostic Verification' })
+  @ApiResponse({
+    status: 200,
+    description: 'Service is healthy and operating within specs',
+  })
+  check() {
+    return {
+      success: true,
+      status: 'healthy',
+      timestamp: new Date().toISOString(),
+      version: '1.0.0',
+    };
+  }
+}
