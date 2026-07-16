@@ -21,6 +21,7 @@ import { RolesModule } from './modules/roles/roles.module';
 import { InvoicesModule } from './modules/invoices/invoices.module';
 import { PurchasesModule } from './modules/purchases/purchases.module';
 import { ReturnsModule } from './modules/returns/returns.module';
+import { ReportsModule } from './modules/reports/reports.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { ReturnsModule } from './modules/returns/returns.module';
     InvoicesModule,
     PurchasesModule,
     ReturnsModule,
+    ReportsModule,
   ],
   controllers: [],
   providers: [],

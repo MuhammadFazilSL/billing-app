@@ -38,7 +38,14 @@ import { SalesReturn } from '../features/returns/pages/SalesReturn';
 import { PurchaseReturn } from '../features/returns/pages/PurchaseReturn';
 import { ReturnHistory } from '../features/returns/pages/ReturnHistory';
 import { Offers } from '../features/offers/pages/Offers';
-import { Reports } from '../features/reports/pages/Reports';
+import { ReportsDashboard } from '../features/reports/pages/ReportsDashboard';
+import { SalesReport } from '../features/reports/pages/SalesReport';
+import { PurchaseReport } from '../features/reports/pages/PurchaseReport';
+import { InventoryReport } from '../features/reports/pages/InventoryReport';
+import { CustomerReport } from '../features/reports/pages/CustomerReport';
+import { SupplierReport } from '../features/reports/pages/SupplierReport';
+import { TaxReport } from '../features/reports/pages/TaxReport';
+import { ProfitLossReport } from '../features/reports/pages/ProfitLossReport';
 import { Settings } from '../features/settings/pages/Settings';
 import { Subscription } from '../features/subscription/pages/Subscription';
 
@@ -121,7 +128,16 @@ export const AppRoutes = () => {
           <Route path="returns/purchase" element={<PurchaseReturn />} />
           
           <Route path="offers" element={<Offers />} />
-          <Route path="reports" element={<Reports />} />
+          
+          <Route path="reports" element={<ReportsDashboard />} />
+          <Route path="reports/sales" element={<SalesReport />} />
+          <Route path="reports/purchases" element={<PurchaseReport />} />
+          <Route path="reports/inventory" element={<InventoryReport />} />
+          <Route path="reports/customers" element={<CustomerReport />} />
+          <Route path="reports/suppliers" element={<SupplierReport />} />
+          <Route path="reports/taxes" element={<TaxReport />} />
+          <Route path="reports/profit-loss" element={<ProfitLossReport />} />
+          
           <Route path="settings" element={<Settings />} />
           <Route path="subscription" element={<Subscription />} />
         </Route>
