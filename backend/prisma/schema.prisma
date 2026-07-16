@@ -93,6 +93,7 @@ model User {
   createdAt     DateTime               @default(now()) @map("created_at") @db.Timestamp(6)
   updatedAt     DateTime               @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
   deletedAt     DateTime?              @map("deleted_at") @db.Timestamp(6)
+  hashedRefreshToken String?           @map("hashed_refresh_token") @db.VarChar(255)
   tenant        Tenant?                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   userRoles     UserRole[]
   invoices      Invoice[]
