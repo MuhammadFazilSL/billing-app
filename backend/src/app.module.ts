@@ -13,6 +13,7 @@ import { BrandsModule } from './modules/brands/brands.module';
 import { UnitsModule } from './modules/units/units.module';
 import { TaxesModule } from './modules/taxes/taxes.module';
 import { ProductsModule } from './modules/products/products.module';
+import { InventoryModule } from './modules/inventory/inventory.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { ProductsModule } from './modules/products/products.module';
     UnitsModule,
     TaxesModule,
     ProductsModule,
+    InventoryModule,
   ],
   controllers: [],
   providers: [],

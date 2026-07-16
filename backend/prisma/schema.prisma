@@ -246,12 +246,14 @@ model InventoryTransaction {
   tenantId    String   @map("tenant_id") @db.Uuid
   productId   String   @map("product_id") @db.Uuid
   type        String   @db.VarChar(30)
-  quantity    Decimal  @db.Decimal(12, 3)
-  direction   String   @db.VarChar(5)
-  unitCost    Decimal  @map("unit_cost") @db.Decimal(10, 2)
-  referenceId String?  @map("reference_id") @db.Uuid
-  userId      String   @map("user_id") @db.Uuid
-  notes       String?  @db.Text
+  quantity                Decimal  @db.Decimal(12, 3)
+  balanceAfterTransaction Decimal  @map("balance_after_transaction") @db.Decimal(12, 3)
+  direction               String   @db.VarChar(5)
+  unitCost                Decimal  @map("unit_cost") @db.Decimal(10, 2)
+  referenceType           String?  @map("reference_type") @db.VarChar(50)
+  referenceId             String?  @map("reference_id") @db.Uuid
+  userId                  String   @map("user_id") @db.Uuid
+  remarks                 String?  @db.Text
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamp(6)
   tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
