@@ -19,6 +19,8 @@ import { SuppliersModule } from './modules/suppliers/suppliers.module';
 import { EmployeesModule } from './modules/employees/employees.module';
 import { RolesModule } from './modules/roles/roles.module';
 import { InvoicesModule } from './modules/invoices/invoices.module';
+import { PurchasesModule } from './modules/purchases/purchases.module';
+import { ReturnsModule } from './modules/returns/returns.module';
 
 @Module({
   imports: [
@@ -45,6 +47,8 @@ import { InvoicesModule } from './modules/invoices/invoices.module';
     EmployeesModule,
     RolesModule,
     InvoicesModule,
+    PurchasesModule,
+    ReturnsModule,
   ],
   controllers: [],
   providers: [],

@@ -31,6 +31,12 @@ import { Roles } from '../features/roles/pages/Roles';
 import { Billing } from '../features/billing/pages/Billing';
 import { InvoiceList } from '../features/billing/pages/InvoiceList';
 import { InvoiceDetails } from '../features/billing/pages/InvoiceDetails';
+import { PurchaseList } from '../features/purchases/pages/PurchaseList';
+import { PurchaseCreate } from '../features/purchases/pages/PurchaseCreate';
+import { PurchaseDetails } from '../features/purchases/pages/PurchaseDetails';
+import { SalesReturn } from '../features/returns/pages/SalesReturn';
+import { PurchaseReturn } from '../features/returns/pages/PurchaseReturn';
+import { ReturnHistory } from '../features/returns/pages/ReturnHistory';
 import { Offers } from '../features/offers/pages/Offers';
 import { Reports } from '../features/reports/pages/Reports';
 import { Settings } from '../features/settings/pages/Settings';
@@ -105,6 +111,15 @@ export const AppRoutes = () => {
           <Route path="billing" element={<Billing />} />
           <Route path="invoices" element={<InvoiceList />} />
           <Route path="invoices/:id" element={<InvoiceDetails />} />
+          
+          <Route path="purchases" element={<PurchaseList />} />
+          <Route path="purchases/new" element={<PurchaseCreate />} />
+          <Route path="purchases/:id" element={<PurchaseDetails />} />
+          
+          <Route path="returns" element={<ReturnHistory />} />
+          <Route path="returns/sales" element={<SalesReturn />} />
+          <Route path="returns/purchase" element={<PurchaseReturn />} />
+          
           <Route path="offers" element={<Offers />} />
           <Route path="reports" element={<Reports />} />
           <Route path="settings" element={<Settings />} />

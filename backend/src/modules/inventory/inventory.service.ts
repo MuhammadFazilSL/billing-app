@@ -138,6 +138,108 @@ export class InventoryService {
     }
   }
 
+  async recordPurchase(tx: any, tenantId: string, userId: string, purchaseId: string, items: any[]) {
+    for (const item of items) {
+      const product = await tx.product.findFirst({
+        where: { id: item.productId, tenantId, deletedAt: null },
+      });
+
+      if (!product) throw new NotFoundException(`Product ${item.productName} not found`);
+
+      const currentStock = Number(product.stock);
+      const balanceAfterTransaction = currentStock + Number(item.quantity);
+
+      await tx.inventoryTransaction.create({
+        data: {
+          tenantId,
+          productId: item.productId,
+          type: 'PURCHASE',
+          direction: 'IN',
+          quantity: item.quantity,
+          unitCost: item.unitCost, // Update to new purchase cost if necessary
+          balanceAfterTransaction,
+          referenceType: 'PURCHASE',
+          referenceId: purchaseId,
+          userId,
+          remarks: 'Purchase Restock',
+        },
+      });
+
+      await tx.product.update({
+        where: { id: item.productId },
+        data: { stock: balanceAfterTransaction, purchasePrice: item.unitCost }, // Optionally update purchase price
+      });
+    }
+  }
+
+  async recordSalesReturn(tx: any, tenantId: string, userId: string, returnId: string, items: any[]) {
+    for (const item of items) {
+      const product = await tx.product.findFirst({
+        where: { id: item.productId, tenantId, deletedAt: null },
+      });
+
+      if (!product) throw new NotFoundException(`Product ${item.productName} not found`);
+
+      const currentStock = Number(product.stock);
+      const balanceAfterTransaction = currentStock + Number(item.quantity); // Sale Return increases stock
+
+      await tx.inventoryTransaction.create({
+        data: {
+          tenantId,
+          productId: item.productId,
+          type: 'SALE_RETURN',
+          direction: 'IN',
+          quantity: item.quantity,
+          unitCost: product.purchasePrice,
+          balanceAfterTransaction,
+          referenceType: 'RETURN',
+          referenceId: returnId,
+          userId,
+          remarks: 'Sales Return',
+        },
+      });
+
+      await tx.product.update({
+        where: { id: item.productId },
+        data: { stock: balanceAfterTransaction },
+      });
+    }
+  }
+
+  async recordPurchaseReturn(tx: any, tenantId: string, userId: string, returnId: string, items: any[]) {
+    for (const item of items) {
+      const product = await tx.product.findFirst({
+        where: { id: item.productId, tenantId, deletedAt: null },
+      });
+
+      if (!product) throw new NotFoundException(`Product ${item.productName} not found`);
+
+      const currentStock = Number(product.stock);
+      const balanceAfterTransaction = currentStock - Number(item.quantity); // Purchase Return decreases stock
+
+      await tx.inventoryTransaction.create({
+        data: {
+          tenantId,
+          productId: item.productId,
+          type: 'PURCHASE_RETURN',
+          direction: 'OUT',
+          quantity: item.quantity,
+          unitCost: product.purchasePrice,
+          balanceAfterTransaction,
+          referenceType: 'RETURN',
+          referenceId: returnId,
+          userId,
+          remarks: 'Purchase Return',
+        },
+      });
+
+      await tx.product.update({
+        where: { id: item.productId },
+        data: { stock: balanceAfterTransaction },
+      });
+    }
+  }
+
   async getLedger(tenantId: string, page = 1, limit = 50) {
     const skip = (page - 1) * limit;
     const [transactions, total] = await Promise.all([
