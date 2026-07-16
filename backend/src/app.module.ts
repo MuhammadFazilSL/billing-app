@@ -14,6 +14,10 @@ import { UnitsModule } from './modules/units/units.module';
 import { TaxesModule } from './modules/taxes/taxes.module';
 import { ProductsModule } from './modules/products/products.module';
 import { InventoryModule } from './modules/inventory/inventory.module';
+import { CustomersModule } from './modules/customers/customers.module';
+import { SuppliersModule } from './modules/suppliers/suppliers.module';
+import { EmployeesModule } from './modules/employees/employees.module';
+import { RolesModule } from './modules/roles/roles.module';
 
 @Module({
   imports: [
@@ -35,6 +39,10 @@ import { InventoryModule } from './modules/inventory/inventory.module';
     TaxesModule,
     ProductsModule,
     InventoryModule,
+    CustomersModule,
+    SuppliersModule,
+    EmployeesModule,
+    RolesModule,
   ],
   controllers: [],
   providers: [],

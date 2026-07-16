@@ -22,8 +22,12 @@ import { Units } from '../features/units/pages/Units';
 import { Taxes } from '../features/taxes/pages/Taxes';
 import { Inventory } from '../features/inventory/pages/Inventory';
 import { Customers } from '../features/customers/pages/Customers';
+import { CustomerForm } from '../features/customers/pages/CustomerForm';
 import { Suppliers } from '../features/suppliers/pages/Suppliers';
+import { SupplierForm } from '../features/suppliers/pages/SupplierForm';
 import { Employees } from '../features/employees/pages/Employees';
+import { EmployeeForm } from '../features/employees/pages/EmployeeForm';
+import { Roles } from '../features/roles/pages/Roles';
 import { Billing } from '../features/billing/pages/Billing';
 import { Offers } from '../features/offers/pages/Offers';
 import { Reports } from '../features/reports/pages/Reports';
@@ -87,8 +91,15 @@ export const AppRoutes = () => {
           <Route path="taxes" element={<Taxes />} />
           <Route path="inventory" element={<Inventory />} />
           <Route path="customers" element={<Customers />} />
+          <Route path="customers/new" element={<CustomerForm />} />
+          <Route path="customers/:id/edit" element={<CustomerForm />} />
           <Route path="suppliers" element={<Suppliers />} />
+          <Route path="suppliers/new" element={<SupplierForm />} />
+          <Route path="suppliers/:id/edit" element={<SupplierForm />} />
           <Route path="employees" element={<Employees />} />
+          <Route path="employees/new" element={<EmployeeForm />} />
+          <Route path="employees/:id/edit" element={<EmployeeForm />} />
+          <Route path="roles" element={<Roles />} />
           <Route path="billing" element={<Billing />} />
           <Route path="offers" element={<Offers />} />
           <Route path="reports" element={<Reports />} />

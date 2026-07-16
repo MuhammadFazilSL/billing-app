@@ -93,6 +93,11 @@ model User {
   tenantId      String?                @map("tenant_id") @db.Uuid
   status        String                 @default("ACTIVE") @db.VarChar(20)
   isMasterAdmin Boolean                @default(false) @map("is_master_admin")
+  employeeCode  String?                @map("employee_code") @db.VarChar(50)
+  designation   String?                @db.VarChar(100)
+  joiningDate   DateTime?              @map("joining_date") @db.Date
+  salary        Decimal?               @db.Decimal(10, 2)
+  notes         String?                @db.Text
   createdAt     DateTime               @default(now()) @map("created_at") @db.Timestamp(6)
   updatedAt     DateTime               @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
   deletedAt     DateTime?              @map("deleted_at") @db.Timestamp(6)
@@ -167,7 +172,9 @@ model Customer {
   phone              String?   @db.VarChar(20)
   address            String?   @db.Text
   outstandingBalance Decimal   @default(0.00) @map("outstanding_balance") @db.Decimal(12, 2)
+  creditLimit        Decimal?  @map("credit_limit") @db.Decimal(12, 2)
   loyaltyPoints      Int       @default(0) @map("loyalty_points")
+  lastPurchaseDate   DateTime? @map("last_purchase_date") @db.Timestamp(6)
   createdAt          DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
   updatedAt          DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
   deletedAt          DateTime? @map("deleted_at") @db.Timestamp(6)
