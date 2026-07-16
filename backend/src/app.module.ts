@@ -6,6 +6,8 @@ import { HealthModule } from './modules/health/health.module';
 import { DatabaseModule } from './modules/database/database.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { RedisModule } from './modules/redis/redis.module';
+import { TenantModule } from './modules/tenant/tenant.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -19,6 +21,8 @@ import { RedisModule } from './modules/redis/redis.module';
     DatabaseModule,
     RedisModule,
     AuthModule,
+    TenantModule,
+    DashboardModule,
   ],
   controllers: [],
   providers: [],

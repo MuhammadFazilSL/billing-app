@@ -1,18 +1,17 @@
 import React from 'react';
+import { BrowserRouter } from 'react-router-dom';
+import { Provider } from 'react-redux';
+import { store } from './store/store';
+import { AppRoutes } from './routes';
 
-const App: React.FC = () => {
+function App() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background text-foreground">
-      <div className="text-center p-6">
-        <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl">
-          SaaS Billing & Shop Management System
-        </h1>
-        <p className="mt-4 text-xl text-secondary-foreground">
-          Sprint 1: Workspace Initialized successfully.
-        </p>
-      </div>
-    </div>
+    <Provider store={store}>
+      <BrowserRouter>
+        <AppRoutes />
+      </BrowserRouter>
+    </Provider>
   );
-};
+}
 
 export default App;

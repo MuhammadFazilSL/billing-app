@@ -148,6 +148,27 @@ export class AuthService {
     }
   }
 
+  async getProfile(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        tenant: true,
+        userRoles: {
+          include: {
+            role: true,
+          }
+        }
+      }
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    const { passwordHash, hashedRefreshToken, ...safeUser } = user;
+    return safeUser;
+  }
+
   private async generateTokens(userId: string, email: string, tenantId: string | null) {
     const payload = { sub: userId, email, tenantId };
     const refreshSecret = this.configService.get<string>('JWT_REFRESH_SECRET');

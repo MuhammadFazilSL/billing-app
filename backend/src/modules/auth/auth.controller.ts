@@ -59,8 +59,6 @@ export class AuthController {
   @ApiOperation({ summary: 'Get current user profile' })
   @ApiResponse({ status: 200, description: 'Profile returned' })
   getProfile(@CurrentUser() user: any) {
-    // Remove sensitive fields before returning
-    const { passwordHash, hashedRefreshToken, ...safeUser } = user;
-    return safeUser;
+    return this.authService.getProfile(user.id);
   }
 }

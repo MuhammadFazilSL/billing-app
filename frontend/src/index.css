@@ -4,6 +4,7 @@
 
 @layer base {
   :root {
+    /* Light Theme */
     --background: 0 0% 100%;
     --foreground: 224 71.4% 4.1%;
     --primary: 220 14% 16%;
@@ -19,6 +20,7 @@
   }
 
   .dark {
+    /* Dark Theme */
     --background: 224 71.4% 4.1%;
     --foreground: 210 20% 98%;
     --primary: 210 20% 98%;
@@ -29,15 +31,15 @@
     --destructive-foreground: 210 20% 98%;
     --border: 215 27.9% 16.9%;
     --input: 215 27.9% 16.9%;
-    --ring: 216 12.2% 83.9%;
+    --ring: 210 20% 98%;
   }
-}
 
-@layer base {
   * {
-    @apply border-border;
+    @apply border-[hsl(var(--border))];
   }
+
   body {
-    @apply bg-background text-foreground;
+    @apply bg-[hsl(var(--background))] text-[hsl(var(--foreground))] antialiased;
+    font-family: 'Inter', sans-serif;
   }
 }
