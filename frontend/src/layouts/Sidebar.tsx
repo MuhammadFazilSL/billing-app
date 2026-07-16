@@ -12,7 +12,10 @@ import {
   Gift, 
   LineChart, 
   Settings, 
-  CreditCard
+  CreditCard,
+  Briefcase,
+  Ruler,
+  Percent
 } from 'lucide-react';
 import clsx from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -21,6 +24,9 @@ const menuItems = [
   { name: 'Dashboard', path: '/app/dashboard', icon: LayoutDashboard },
   { name: 'Products', path: '/app/products', icon: Package },
   { name: 'Categories', path: '/app/categories', icon: Tags },
+  { name: 'Brands', path: '/app/brands', icon: Briefcase },
+  { name: 'Units', path: '/app/units', icon: Ruler },
+  { name: 'Taxes', path: '/app/taxes', icon: Percent },
   { name: 'Inventory', path: '/app/inventory', icon: Warehouse },
   { name: 'Customers', path: '/app/customers', icon: Users },
   { name: 'Suppliers', path: '/app/suppliers', icon: Truck },

@@ -8,6 +8,11 @@ import { AuthModule } from './modules/auth/auth.module';
 import { RedisModule } from './modules/redis/redis.module';
 import { TenantModule } from './modules/tenant/tenant.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { CategoriesModule } from './modules/categories/categories.module';
+import { BrandsModule } from './modules/brands/brands.module';
+import { UnitsModule } from './modules/units/units.module';
+import { TaxesModule } from './modules/taxes/taxes.module';
+import { ProductsModule } from './modules/products/products.module';
 
 @Module({
   imports: [
@@ -23,6 +28,11 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
     AuthModule,
     TenantModule,
     DashboardModule,
+    CategoriesModule,
+    BrandsModule,
+    UnitsModule,
+    TaxesModule,
+    ProductsModule,
   ],
   controllers: [],
   providers: [],

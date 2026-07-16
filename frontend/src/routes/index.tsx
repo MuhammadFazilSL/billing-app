@@ -15,7 +15,11 @@ import { Register } from '../features/auth/pages/Register';
 // Feature Pages (Placeholders)
 import { Dashboard } from '../features/dashboard/pages/Dashboard';
 import { Products } from '../features/products/pages/Products';
+import { ProductForm } from '../features/products/pages/ProductForm';
 import { Categories } from '../features/categories/pages/Categories';
+import { Brands } from '../features/brands/pages/Brands';
+import { Units } from '../features/units/pages/Units';
+import { Taxes } from '../features/taxes/pages/Taxes';
 import { Inventory } from '../features/inventory/pages/Inventory';
 import { Customers } from '../features/customers/pages/Customers';
 import { Suppliers } from '../features/suppliers/pages/Suppliers';
@@ -75,7 +79,12 @@ export const AppRoutes = () => {
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="products" element={<Products />} />
+          <Route path="products/new" element={<ProductForm />} />
+          <Route path="products/:id/edit" element={<ProductForm />} />
           <Route path="categories" element={<Categories />} />
+          <Route path="brands" element={<Brands />} />
+          <Route path="units" element={<Units />} />
+          <Route path="taxes" element={<Taxes />} />
           <Route path="inventory" element={<Inventory />} />
           <Route path="customers" element={<Customers />} />
           <Route path="suppliers" element={<Suppliers />} />

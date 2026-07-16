@@ -64,6 +64,33 @@ export class AuthService {
         await tx.role.create({ data: { tenantId: tenant.id, name: 'Manager', isSystemRole: true } });
         await tx.role.create({ data: { tenantId: tenant.id, name: 'Cashier', isSystemRole: true } });
 
+        // Create Default Units
+        const defaultUnits = [
+          { name: 'Piece', shortName: 'pcs' },
+          { name: 'Packet', shortName: 'pkt' },
+          { name: 'Box', shortName: 'box' },
+          { name: 'Bottle', shortName: 'btl' },
+          { name: 'Kilogram', shortName: 'kg' },
+          { name: 'Gram', shortName: 'g' },
+          { name: 'Liter', shortName: 'l' },
+          { name: 'Milliliter', shortName: 'ml' },
+          { name: 'Meter', shortName: 'm' },
+          { name: 'Feet', shortName: 'ft' },
+        ];
+        await tx.unit.createMany({
+          data: defaultUnits.map(u => ({ ...u, tenantId: tenant.id }))
+        });
+
+        // Create Default Tax
+        await tx.tax.create({
+          data: {
+            tenantId: tenant.id,
+            name: 'Tax Free',
+            rate: 0,
+            isDefault: true,
+          }
+        });
+
         // 4. Create Owner User
         const hashedPassword = await bcrypt.hash(dto.password, 10);
         const user = await tx.user.create({

@@ -53,6 +53,9 @@ model Tenant {
   notifications          Notification[]
   categories             Category[]
   brands                 Brand[]
+  units                  Unit[]
+  taxes                  Tax[]
+  productImages          ProductImage[]
   invoiceItems           InvoiceItem[]
   invoicePayments        InvoicePayment[]
 
@@ -99,6 +102,8 @@ model User {
   invoices      Invoice[]
   inventoryTx   InventoryTransaction[]
   activityLogs  ActivityLog[]
+  createdProducts Product[]            @relation("ProductCreatedBy")
+  updatedProducts Product[]            @relation("ProductUpdatedBy")
 
   @@index([tenantId])
   @@map("users")
@@ -201,21 +206,32 @@ model Product {
   name           String                 @db.VarChar(150)
   sku            String?                @db.VarChar(50)
   barcode        String?                @db.VarChar(50)
+  qrCode         String?                @map("qr_code") @db.VarChar(255)
   description    String?                @db.Text
   purchasePrice  Decimal                @map("purchase_price") @db.Decimal(10, 2)
   sellingPrice   Decimal                @map("selling_price") @db.Decimal(10, 2)
+  mrp            Decimal?               @db.Decimal(10, 2)
   stock          Decimal                @default(0.000) @db.Decimal(12, 3)
-  alertThreshold Decimal                @default(5.000) @map("alert_threshold") @db.Decimal(12, 3)
-  taxRate        Decimal                @default(0.00) @map("tax_rate") @db.Decimal(5, 2)
+  minimumStock   Decimal                @default(5.000) @map("minimum_stock") @db.Decimal(12, 3)
+  reorderLevel   Decimal                @default(10.000) @map("reorder_level") @db.Decimal(12, 3)
   categoryId     String?                @map("category_id") @db.Uuid
   brandId        String?                @map("brand_id") @db.Uuid
+  unitId         String?                @map("unit_id") @db.Uuid
+  taxId          String?                @map("tax_id") @db.Uuid
   status         String                 @default("ACTIVE") @db.VarChar(20)
+  createdById    String?                @map("created_by_id") @db.Uuid
+  updatedById    String?                @map("updated_by_id") @db.Uuid
   createdAt      DateTime               @default(now()) @map("created_at") @db.Timestamp(6)
   updatedAt      DateTime               @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
   deletedAt      DateTime?              @map("deleted_at") @db.Timestamp(6)
   tenant         Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   category       Category?              @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   brand          Brand?                 @relation(fields: [brandId], references: [id], onDelete: SetNull)
+  unit           Unit?                  @relation(fields: [unitId], references: [id], onDelete: Restrict)
+  tax            Tax?                   @relation(fields: [taxId], references: [id], onDelete: Restrict)
+  createdBy      User?                  @relation("ProductCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy      User?                  @relation("ProductUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  images         ProductImage[]
   inventoryTx    InventoryTransaction[]
   invoiceItems   InvoiceItem[]
 
@@ -246,13 +262,16 @@ model InventoryTransaction {
 }
 
 model Category {
-  id        String    @id @default(uuid()) @db.Uuid
-  tenantId  String    @map("tenant_id") @db.Uuid
-  name      String    @db.VarChar(100)
-  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
-  deletedAt DateTime? @map("deleted_at") @db.Timestamp(6)
-  tenant    Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  products  Product[]
+  id               String     @id @default(uuid()) @db.Uuid
+  tenantId         String     @map("tenant_id") @db.Uuid
+  parentCategoryId String?    @map("parent_category_id") @db.Uuid
+  name             String     @db.VarChar(100)
+  createdAt        DateTime   @default(now()) @map("created_at") @db.Timestamp(6)
+  deletedAt        DateTime?  @map("deleted_at") @db.Timestamp(6)
+  tenant           Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  parentCategory   Category?  @relation("CategoryHierarchy", fields: [parentCategoryId], references: [id], onDelete: Restrict)
+  subCategories    Category[] @relation("CategoryHierarchy")
+  products         Product[]
 
   @@map("categories")
 }
@@ -267,6 +286,48 @@ model Brand {
   products  Product[]
 
   @@map("brands")
+}
+
+model Unit {
+  id        String    @id @default(uuid()) @db.Uuid
+  tenantId  String    @map("tenant_id") @db.Uuid
+  name      String    @db.VarChar(50)
+  shortName String    @map("short_name") @db.VarChar(20)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
+  deletedAt DateTime? @map("deleted_at") @db.Timestamp(6)
+  tenant    Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  products  Product[]
+
+  @@map("units")
+}
+
+model Tax {
+  id          String    @id @default(uuid()) @db.Uuid
+  tenantId    String    @map("tenant_id") @db.Uuid
+  name        String    @db.VarChar(50)
+  rate        Decimal   @db.Decimal(5, 2)
+  isInclusive Boolean   @default(false) @map("is_inclusive")
+  isDefault   Boolean   @default(false) @map("is_default")
+  status      String    @default("ACTIVE") @db.VarChar(20)
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
+  deletedAt   DateTime? @map("deleted_at") @db.Timestamp(6)
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  products    Product[]
+
+  @@map("taxes")
+}
+
+model ProductImage {
+  id        String   @id @default(uuid()) @db.Uuid
+  tenantId  String   @map("tenant_id") @db.Uuid
+  productId String   @map("product_id") @db.Uuid
+  url       String   @db.VarChar(255)
+  isPrimary Boolean  @default(false) @map("is_primary")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("product_images")
 }
 
 // ==========================================
