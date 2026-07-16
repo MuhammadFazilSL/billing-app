@@ -99,6 +99,45 @@ export class InventoryService {
     });
   }
 
+  async recordSale(tx: any, tenantId: string, userId: string, invoiceId: string, items: any[]) {
+    for (const item of items) {
+      const product = await tx.product.findFirst({
+        where: { id: item.productId, tenantId, deletedAt: null },
+      });
+
+      if (!product) {
+        throw new NotFoundException(`Product ${item.productName} not found`);
+      }
+
+      const currentStock = Number(product.stock);
+      
+      // We allow stock to go negative for sales, or we could prevent it depending on business rules.
+      // Usually POS allows negative stock to not block checkout, but let's assume we just decrement it.
+      const balanceAfterTransaction = currentStock - item.quantity;
+
+      await tx.inventoryTransaction.create({
+        data: {
+          tenantId,
+          productId: item.productId,
+          type: 'SALE',
+          direction: 'OUT',
+          quantity: item.quantity,
+          unitCost: product.purchasePrice,
+          balanceAfterTransaction,
+          referenceType: 'INVOICE',
+          referenceId: invoiceId,
+          userId,
+          remarks: 'POS Sale',
+        },
+      });
+
+      await tx.product.update({
+        where: { id: item.productId },
+        data: { stock: balanceAfterTransaction },
+      });
+    }
+  }
+
   async getLedger(tenantId: string, page = 1, limit = 50) {
     const skip = (page - 1) * limit;
     const [transactions, total] = await Promise.all([

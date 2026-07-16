@@ -29,6 +29,8 @@ import { Employees } from '../features/employees/pages/Employees';
 import { EmployeeForm } from '../features/employees/pages/EmployeeForm';
 import { Roles } from '../features/roles/pages/Roles';
 import { Billing } from '../features/billing/pages/Billing';
+import { InvoiceList } from '../features/billing/pages/InvoiceList';
+import { InvoiceDetails } from '../features/billing/pages/InvoiceDetails';
 import { Offers } from '../features/offers/pages/Offers';
 import { Reports } from '../features/reports/pages/Reports';
 import { Settings } from '../features/settings/pages/Settings';
@@ -101,6 +103,8 @@ export const AppRoutes = () => {
           <Route path="employees/:id/edit" element={<EmployeeForm />} />
           <Route path="roles" element={<Roles />} />
           <Route path="billing" element={<Billing />} />
+          <Route path="invoices" element={<InvoiceList />} />
+          <Route path="invoices/:id" element={<InvoiceDetails />} />
           <Route path="offers" element={<Offers />} />
           <Route path="reports" element={<Reports />} />
           <Route path="settings" element={<Settings />} />

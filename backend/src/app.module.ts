@@ -18,6 +18,7 @@ import { CustomersModule } from './modules/customers/customers.module';
 import { SuppliersModule } from './modules/suppliers/suppliers.module';
 import { EmployeesModule } from './modules/employees/employees.module';
 import { RolesModule } from './modules/roles/roles.module';
+import { InvoicesModule } from './modules/invoices/invoices.module';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { RolesModule } from './modules/roles/roles.module';
     SuppliersModule,
     EmployeesModule,
     RolesModule,
+    InvoicesModule,
   ],
   controllers: [],
   providers: [],

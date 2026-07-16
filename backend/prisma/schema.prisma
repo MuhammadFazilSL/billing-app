@@ -356,6 +356,7 @@ model Invoice {
   balanceDue     Decimal          @map("balance_due") @db.Decimal(12, 2)
   paymentStatus  String           @map("payment_status") @db.VarChar(20)
   paymentMethod  String           @map("payment_method") @db.VarChar(20)
+  status         String           @default("COMPLETED") @db.VarChar(20)
   userId         String           @map("user_id") @db.Uuid
   notes          String?          @db.Text
   createdAt      DateTime         @default(now()) @map("created_at") @db.Timestamp(6)
