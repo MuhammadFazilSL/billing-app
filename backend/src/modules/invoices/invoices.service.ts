@@ -2,12 +2,14 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateInvoiceDto } from './dto/create-invoice.dto';
 import { InventoryService } from '../inventory/inventory.service';
+import { LoyaltyService } from '../loyalty/loyalty.service';
 
 @Injectable()
 export class InvoicesService {
   constructor(
     private prisma: PrismaService,
-    private inventoryService: InventoryService
+    private inventoryService: InventoryService,
+    private loyaltyService: LoyaltyService
   ) {}
 
   async create(tenantId: string, userId: string, createInvoiceDto: CreateInvoiceDto) {
@@ -43,10 +45,13 @@ export class InvoicesService {
           amountPaid: createInvoiceDto.amountPaid,
           balanceDue: createInvoiceDto.grandTotal - createInvoiceDto.amountPaid,
           paymentStatus: createInvoiceDto.paymentStatus,
-          paymentMethod: createInvoiceDto.paymentMethod,
+          paymentMethod: createInvoiceDto.paymentMethod || 'CASH',
           status: 'COMPLETED',
           userId,
           notes: createInvoiceDto.notes,
+          couponCode: createInvoiceDto.couponCode,
+          loyaltyRedeemed: createInvoiceDto.loyaltyRedeemed,
+          discountDetails: createInvoiceDto.discountDetails || {},
         }
       });
 
@@ -84,12 +89,25 @@ export class InvoicesService {
       // 6. Record Sale in Inventory (Reduces Stock)
       await this.inventoryService.recordSale(tx, tenantId, userId, invoice.id, invoiceItemsData);
 
-      // 7. Update Customer last purchase if applicable
+      // 7. Update Customer last purchase, redeem loyalty, earn loyalty
       if (createInvoiceDto.customerId) {
         await tx.customer.update({
           where: { id: createInvoiceDto.customerId },
           data: { lastPurchaseDate: new Date() }
         });
+
+        if (createInvoiceDto.loyaltyRedeemed && createInvoiceDto.loyaltyRedeemed > 0) {
+          await this.loyaltyService.redeemPoints(
+            tenantId, 
+            createInvoiceDto.customerId, 
+            createInvoiceDto.loyaltyRedeemed, 
+            invoice.id, 
+            'Redeemed on invoice', 
+            tx
+          );
+        }
+
+        await this.loyaltyService.earnPoints(tx, tenantId, createInvoiceDto.customerId, invoice.id, createInvoiceDto.grandTotal);
       }
 
       return invoice;

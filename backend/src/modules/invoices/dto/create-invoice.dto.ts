@@ -86,6 +86,20 @@ export class CreateInvoiceDto {
   @IsOptional()
   notes?: string;
 
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  couponCode?: string;
+
+  @ApiPropertyOptional()
+  @IsNumber()
+  @IsOptional()
+  loyaltyRedeemed?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  discountDetails?: any;
+
   @ApiProperty({ type: [InvoiceItemDto] })
   @IsArray()
   @ValidateNested({ each: true })

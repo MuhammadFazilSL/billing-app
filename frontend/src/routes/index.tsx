@@ -37,7 +37,10 @@ import { PurchaseDetails } from '../features/purchases/pages/PurchaseDetails';
 import { SalesReturn } from '../features/returns/pages/SalesReturn';
 import { PurchaseReturn } from '../features/returns/pages/PurchaseReturn';
 import { ReturnHistory } from '../features/returns/pages/ReturnHistory';
-import { Offers } from '../features/offers/pages/Offers';
+import { OffersList } from '../features/offers/pages/OffersList';
+import { OfferCreate } from '../features/offers/pages/OfferCreate';
+import { Coupons } from '../features/offers/pages/Coupons';
+import { Loyalty } from '../features/offers/pages/Loyalty';
 import { ReportsDashboard } from '../features/reports/pages/ReportsDashboard';
 import { SalesReport } from '../features/reports/pages/SalesReport';
 import { PurchaseReport } from '../features/reports/pages/PurchaseReport';
@@ -127,7 +130,11 @@ export const AppRoutes = () => {
           <Route path="returns/sales" element={<SalesReturn />} />
           <Route path="returns/purchase" element={<PurchaseReturn />} />
           
-          <Route path="offers" element={<Offers />} />
+          {/* Offers & Loyalty Routes */}
+          <Route path="offers" element={<OffersList />} />
+          <Route path="offers/create" element={<OfferCreate />} />
+          <Route path="coupons" element={<Coupons />} />
+          <Route path="loyalty" element={<Loyalty />} />
           
           <Route path="reports" element={<ReportsDashboard />} />
           <Route path="reports/sales" element={<SalesReport />} />

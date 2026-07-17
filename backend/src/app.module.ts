@@ -22,6 +22,9 @@ import { InvoicesModule } from './modules/invoices/invoices.module';
 import { PurchasesModule } from './modules/purchases/purchases.module';
 import { ReturnsModule } from './modules/returns/returns.module';
 import { ReportsModule } from './modules/reports/reports.module';
+import { OffersModule } from './modules/offers/offers.module';
+import { CouponsModule } from './modules/coupons/coupons.module';
+import { LoyaltyModule } from './modules/loyalty/loyalty.module';
 
 @Module({
   imports: [
@@ -51,6 +54,9 @@ import { ReportsModule } from './modules/reports/reports.module';
     PurchasesModule,
     ReturnsModule,
     ReportsModule,
+    OffersModule,
+    CouponsModule,
+    LoyaltyModule,
   ],
   controllers: [],
   providers: [],

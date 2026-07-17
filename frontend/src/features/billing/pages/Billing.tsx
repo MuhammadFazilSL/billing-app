@@ -4,6 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import { invoiceApi } from '../../../api/invoices';
 import { getProducts } from '../../../api/masterData';
 import { customerApi } from '../../../api/customers';
+import { couponsApi } from '../../../api/coupons';
+import { offersApi } from '../../../api/offers';
+import { loyaltyApi } from '../../../api/loyalty';
 import { Breadcrumb } from '../../../layouts/Breadcrumb';
 
 interface CartItem {
@@ -27,11 +30,23 @@ export const Billing: React.FC = () => {
   const [selectedCustomerId, setSelectedCustomerId] = useState<string>('');
   const [paymentMethod, setPaymentMethod] = useState<string>('CASH');
   const [notes, setNotes] = useState('');
+  
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
+  const [redeemLoyaltyPoints, setRedeemLoyaltyPoints] = useState<number>(0);
 
   // Fetch all products (in real app, we'd paginate or search server-side)
   const { data: products = [] } = useQuery({ queryKey: ['products'], queryFn: getProducts });
   const { data: customersData = {} } = useQuery({ queryKey: ['customers', 'all'], queryFn: () => customerApi.getAll(1, 100) });
   const customers = customersData.data || [];
+  
+  const { data: offers = [] } = useQuery({ queryKey: ['offers'], queryFn: offersApi.getAll });
+  
+  const { data: loyaltyData } = useQuery({
+    queryKey: ['loyalty', selectedCustomerId],
+    queryFn: () => loyaltyApi.getCustomerLoyalty(selectedCustomerId),
+    enabled: !!selectedCustomerId
+  });
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -118,18 +133,72 @@ export const Billing: React.FC = () => {
   const totals = useMemo(() => {
     let subTotal = 0;
     let taxAmount = 0;
-    let discountAmount = 0;
+    let baseDiscount = 0;
 
-    cart.forEach(item => {
-      subTotal += (item.unitPrice * item.quantity);
-      taxAmount += item.taxAmount;
-      discountAmount += item.discountAmount;
+    // Apply Product Offers (Auto apply the best offer)
+    const storeOffers = offers.filter((o: any) => o.offerScope === 'STORE' || o.offerScope === 'PRODUCT');
+    
+    let processedCart = cart.map(item => {
+      let bestDiscount = 0;
+      storeOffers.forEach((o: any) => {
+        let amt = 0;
+        if (o.type === 'PERCENTAGE') amt = (item.unitPrice * o.value) / 100;
+        else amt = o.value;
+        if (amt > bestDiscount) bestDiscount = amt;
+      });
+      return { ...item, discountAmount: bestDiscount * item.quantity };
     });
 
-    const grandTotal = subTotal + taxAmount - discountAmount;
+    processedCart.forEach(item => {
+      subTotal += (item.unitPrice * item.quantity);
+      taxAmount += item.taxAmount;
+      baseDiscount += item.discountAmount;
+    });
 
-    return { subTotal, taxAmount, discountAmount, grandTotal };
-  }, [cart]);
+    let discountAmount = baseDiscount;
+    let runningTotal = subTotal + taxAmount - discountAmount;
+
+    // Apply Coupon
+    if (appliedCoupon) {
+      if (appliedCoupon.type === 'PERCENTAGE') {
+        let cpDis = (runningTotal * appliedCoupon.value) / 100;
+        discountAmount += cpDis;
+        runningTotal -= cpDis;
+      } else {
+        discountAmount += appliedCoupon.value;
+        runningTotal -= appliedCoupon.value;
+      }
+    }
+
+    // Apply Loyalty
+    if (redeemLoyaltyPoints > 0) {
+      // 1 point = $1
+      const loyaltyDiscount = redeemLoyaltyPoints;
+      discountAmount += loyaltyDiscount;
+      runningTotal -= loyaltyDiscount;
+    }
+
+    if (runningTotal < 0) runningTotal = 0;
+
+    return { subTotal, taxAmount, discountAmount, grandTotal: runningTotal, finalCart: processedCart };
+  }, [cart, offers, appliedCoupon, redeemLoyaltyPoints]);
+
+  const validateCouponMut = useMutation({
+    mutationFn: (code: string) => couponsApi.validate(code, totals.subTotal),
+    onSuccess: (data) => {
+      setAppliedCoupon(data);
+      alert('Coupon applied!');
+    },
+    onError: (err: any) => {
+      setAppliedCoupon(null);
+      alert(err.response?.data?.message || 'Invalid coupon');
+    }
+  });
+
+  const handleApplyCoupon = () => {
+    if (!couponCode) return;
+    validateCouponMut.mutate(couponCode);
+  };
 
   const generateMut = useMutation({
     mutationFn: invoiceApi.create,
@@ -164,7 +233,9 @@ export const Billing: React.FC = () => {
       paymentStatus: 'PAID',
       paymentMethod,
       notes,
-      items: cart
+      couponCode: appliedCoupon?.code,
+      loyaltyRedeemed: redeemLoyaltyPoints || 0,
+      items: totals.finalCart
     };
 
     generateMut.mutate(payload);
@@ -281,6 +352,61 @@ export const Billing: React.FC = () => {
                 rows={2}
                 placeholder="Optional notes..."
               ></textarea>
+            </div>
+
+            <div className="pt-4 border-t space-y-3">
+              <div>
+                <label className="block text-sm font-medium mb-1">Coupon Code</label>
+                <div className="flex gap-2">
+                  <input 
+                    type="text" 
+                    className="flex-1 h-9 rounded-md border bg-background px-3 uppercase" 
+                    placeholder="e.g. SUMMER10" 
+                    value={couponCode}
+                    onChange={(e) => setCouponCode(e.target.value)}
+                    disabled={!!appliedCoupon}
+                  />
+                  {!appliedCoupon ? (
+                    <button 
+                      onClick={handleApplyCoupon}
+                      className="px-4 h-9 rounded-md bg-secondary text-secondary-foreground"
+                    >
+                      Apply
+                    </button>
+                  ) : (
+                    <button 
+                      onClick={() => { setAppliedCoupon(null); setCouponCode(''); }}
+                      className="px-4 h-9 rounded-md bg-red-100 text-red-600"
+                    >
+                      Remove
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {selectedCustomerId && loyaltyData && (
+                <div>
+                  <label className="block text-sm font-medium mb-1 flex justify-between">
+                    <span>Redeem Loyalty Points</span>
+                    <span className="text-primary font-bold">Avail: {loyaltyData.balance}</span>
+                  </label>
+                  <input 
+                    type="number" 
+                    min="0"
+                    max={loyaltyData.balance}
+                    value={redeemLoyaltyPoints || ''}
+                    onChange={(e) => {
+                      let val = parseInt(e.target.value) || 0;
+                      if (val > loyaltyData.balance) val = loyaltyData.balance;
+                      if (val > totals.grandTotal + redeemLoyaltyPoints) val = Math.floor(totals.grandTotal + redeemLoyaltyPoints); // Don't allow below zero
+                      setRedeemLoyaltyPoints(val);
+                    }}
+                    className="w-full h-9 rounded-md border bg-background px-3"
+                    placeholder="Enter points to redeem"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">1 point = $1 discount</p>
+                </div>
+              )}
             </div>
           </div>
 

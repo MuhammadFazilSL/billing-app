@@ -11,9 +11,11 @@ import {
   ShoppingCart,
   Undo2,
   Contact,
-  Gift,
-  LineChart,
-  Settings
+  Settings,
+  BarChart,
+  Tag,
+  Ticket,
+  Award
 } from 'lucide-react';
 import clsx from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -32,8 +34,10 @@ export const Sidebar: React.FC = () => {
     { name: 'Suppliers', path: '/app/suppliers', icon: Truck },
     { name: 'Employees', path: '/app/employees', icon: Contact },
     { name: 'Roles', path: '/app/roles', icon: Users },
-    { name: 'Offers', path: '/app/offers', icon: Gift },
-    { name: 'Reports', path: '/app/reports', icon: LineChart },
+    { name: 'Offers', path: '/app/offers', icon: Tag },
+    { name: 'Coupons', path: '/app/coupons', icon: Ticket },
+    { name: 'Loyalty', path: '/app/loyalty', icon: Award },
+    { name: 'Reports', path: '/app/reports', icon: BarChart },
     { name: 'Settings', path: '/app/settings', icon: Settings },
     { name: 'Subscription', path: '/app/subscription', icon: CreditCard },
   ];
