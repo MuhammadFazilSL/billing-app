@@ -35,14 +35,25 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       }
     });
 
-    if (!user) {
-      throw new UnauthorizedException('User not found or disabled');
+    if (user) {
+      if (user.status !== 'ACTIVE') {
+        throw new UnauthorizedException('User account is not active');
+      }
+      return user;
     }
 
-    if (user.status !== 'ACTIVE') {
-      throw new UnauthorizedException('User account is not active');
+    // Check if it's a platform admin
+    const platformAdmin = await this.prisma.platformAdmin.findUnique({
+      where: { id: payload.sub }
+    });
+
+    if (platformAdmin) {
+      if (!platformAdmin.isActive) {
+        throw new UnauthorizedException('Platform Admin account is not active');
+      }
+      return platformAdmin;
     }
 
-    return user;
+    throw new UnauthorizedException('User not found or disabled');
   }
 }

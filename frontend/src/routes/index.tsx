@@ -41,6 +41,14 @@ import { OffersList } from '../features/offers/pages/OffersList';
 import { OfferCreate } from '../features/offers/pages/OfferCreate';
 import { Coupons } from '../features/offers/pages/Coupons';
 import { Loyalty } from '../features/offers/pages/Loyalty';
+import { PlatformLayout } from '../layouts/PlatformLayout';
+import { PlatformLogin } from '../features/platform/pages/PlatformLogin';
+import { PlatformDashboard } from '../features/platform/pages/PlatformDashboard';
+import { Tenants } from '../features/platform/pages/Tenants';
+import { Plans } from '../features/platform/pages/Plans';
+import { Subscriptions } from '../features/platform/pages/Subscriptions';
+import { Usage } from '../features/platform/pages/Usage';
+import { Settings as PlatformSettings } from '../features/platform/pages/Settings';
 import { ReportsDashboard } from '../features/reports/pages/ReportsDashboard';
 import { SalesReport } from '../features/reports/pages/SalesReport';
 import { PurchaseReport } from '../features/reports/pages/PurchaseReport';
@@ -95,7 +103,18 @@ export const AppRoutes = () => {
         <Route path="/auth/register" element={<Register />} />
       </Route>
 
-      {/* Protected Routes */}
+      {/* Platform Routes */}
+      <Route path="/platform/login" element={<PlatformLogin />} />
+      <Route path="/platform" element={<PlatformLayout />}>
+        <Route index element={<PlatformDashboard />} />
+        <Route path="tenants" element={<Tenants />} />
+        <Route path="plans" element={<Plans />} />
+        <Route path="subscriptions" element={<Subscriptions />} />
+        <Route path="usage" element={<Usage />} />
+        <Route path="settings" element={<PlatformSettings />} />
+      </Route>
+
+      {/* Tenant Routes */}
       <Route element={<ProtectedRoute />}>
         <Route path="/app" element={<DashboardLayout />}>
           <Route index element={<Navigate to="dashboard" replace />} />

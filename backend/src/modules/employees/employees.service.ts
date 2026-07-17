@@ -3,10 +3,14 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
 import * as bcrypt from 'bcrypt';
+import { UsageService } from '../usage/usage.service';
 
 @Injectable()
 export class EmployeesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private usageService: UsageService
+  ) {}
 
   async create(tenantId: string, createEmployeeDto: CreateEmployeeDto) {
     const existingUser = await this.prisma.user.findUnique({
@@ -20,7 +24,7 @@ export class EmployeesService {
     const passwordHash = await bcrypt.hash(createEmployeeDto.password, 10);
     const { password, ...rest } = createEmployeeDto;
 
-    return this.prisma.user.create({
+    const user = await this.prisma.user.create({
       data: {
         ...rest,
         passwordHash,
@@ -39,6 +43,9 @@ export class EmployeesService {
         createdAt: true,
       }
     });
+    
+    await this.usageService.incrementEmployees(tenantId);
+    return user;
   }
 
   async findAll(tenantId: string, page = 1, limit = 50, search?: string) {
@@ -125,9 +132,11 @@ export class EmployeesService {
 
   async remove(id: string, tenantId: string) {
     const employee = await this.findOne(id, tenantId);
-    return this.prisma.user.update({
+    const deleted = await this.prisma.user.update({
       where: { id: employee.id },
       data: { deletedAt: new Date(), status: 'INACTIVE' },
     });
+    await this.usageService.decrementEmployees(tenantId);
+    return deleted;
   }
 }

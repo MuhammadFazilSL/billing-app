@@ -25,6 +25,11 @@ import { ReportsModule } from './modules/reports/reports.module';
 import { OffersModule } from './modules/offers/offers.module';
 import { CouponsModule } from './modules/coupons/coupons.module';
 import { LoyaltyModule } from './modules/loyalty/loyalty.module';
+import { AdminModule } from './modules/admin/admin.module';
+import { PlatformModule } from './modules/platform/platform.module';
+import { PlansModule } from './modules/plans/plans.module';
+import { SubscriptionsModule } from './modules/subscriptions/subscriptions.module';
+import { UsageModule } from './modules/usage/usage.module';
 
 @Module({
   imports: [
@@ -57,6 +62,11 @@ import { LoyaltyModule } from './modules/loyalty/loyalty.module';
     OffersModule,
     CouponsModule,
     LoyaltyModule,
+    AdminModule,
+    PlatformModule,
+    PlansModule,
+    SubscriptionsModule,
+    UsageModule,
   ],
   controllers: [],
   providers: [],

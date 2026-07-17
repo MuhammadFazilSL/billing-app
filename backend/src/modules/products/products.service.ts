@@ -1,13 +1,20 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { RedisService } from '../redis/redis.service';
+import { UsageService } from '../usage/usage.service';
 
 @Injectable()
 export class ProductsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private redisService: RedisService,
+    private usageService: UsageService,
+  ) {}
 
   async create(tenantId: string, userId: string, createProductDto: CreateProductDto) {
+    await this.usageService.incrementProducts(tenantId, 1);
     return this.prisma.product.create({
       data: {
         ...createProductDto,
@@ -60,12 +67,15 @@ export class ProductsService {
 
   async remove(id: string, tenantId: string, userId: string) {
     await this.findOne(id, tenantId);
-    return this.prisma.product.update({
+    const deletedProduct = await this.prisma.product.update({
       where: { id },
       data: { 
         deletedAt: new Date(),
         updatedById: userId,
       },
     });
+    
+    await this.usageService.decrementProducts(tenantId, 1);
+    return deletedProduct;
   }
 }

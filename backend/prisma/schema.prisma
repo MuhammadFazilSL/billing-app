@@ -10,61 +10,134 @@ datasource db {
 // 1. Core Platform Entities
 // ==========================================
 
+model PlatformAdmin {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @db.VarChar(100)
+  email     String   @unique @db.VarChar(100)
+  password  String   @db.VarChar(255)
+  role      String   @default("SUPER_ADMIN") @db.VarChar(50)
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  auditLogs PlatformAuditLog[]
+
+  @@map("platform_admins")
+}
+
+model PlatformConfig {
+  id                  String   @id @default("default") @db.VarChar(50)
+  platformName        String   @default("Billing SaaS") @map("platform_name")
+  logoUrl             String?  @map("logo_url")
+  supportEmail        String?  @map("support_email")
+  supportPhone        String?  @map("support_phone")
+  timezone            String   @default("UTC")
+  currency            String   @default("USD")
+  registrationEnabled Boolean  @default(true) @map("registration_enabled")
+  maintenanceMode     Boolean  @default(false) @map("maintenance_mode")
+  defaultTrialDays    Int      @default(14) @map("default_trial_days")
+  defaultPlanId       String?  @map("default_plan_id") @db.Uuid
+  companyAddress      String?  @map("company_address") @db.Text
+  privacyPolicyUrl    String?  @map("privacy_policy_url")
+  termsConditionsUrl  String?  @map("terms_conditions_url")
+  updatedAt           DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  defaultPlan Plan? @relation(fields: [defaultPlanId], references: [id])
+
+  @@map("platform_configs")
+}
+
+model PlatformAuditLog {
+  id         String   @id @default(uuid()) @db.Uuid
+  adminId    String   @map("admin_id") @db.Uuid
+  action     String   @db.VarChar(100)
+  entityName String   @map("entity_name") @db.VarChar(100)
+  entityId   String?  @map("entity_id") @db.VarChar(100)
+  details    Json     @default("{}")
+  ipAddress  String?  @map("ip_address") @db.VarChar(45)
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+
+  admin PlatformAdmin @relation(fields: [adminId], references: [id])
+
+  @@index([createdAt])
+  @@map("platform_audit_logs")
+}
+
 model Plan {
-  id                  String   @id @default(uuid()) @db.Uuid
-  name                String   @unique @db.VarChar(50)
-  price               Decimal  @db.Decimal(10, 2)
-  billingCycle        String   @db.VarChar(20)
+  id           String  @id @default(uuid()) @db.Uuid
+  name         String  @unique @db.VarChar(50)
+  // Existing fields (preserved for backward compatibility)
+  price        Decimal @db.Decimal(10, 2)
+  billingCycle String  @db.VarChar(20)
+
+  // New fields for Sprint 13
+  code           String?  @db.VarChar(50)
+  description    String?  @db.Text
+  monthlyPrice   Decimal? @map("monthly_price") @db.Decimal(10, 2)
+  yearlyPrice    Decimal? @map("yearly_price") @db.Decimal(10, 2)
+  currency       String   @default("USD") @db.VarChar(10)
+  maxCustomers   Int      @default(0) @map("max_customers")
+  maxBranches    Int      @default(1) @map("max_branches")
+  storageLimitMB Int      @default(100) @map("storage_limit_mb")
+  isActive       Boolean  @default(true) @map("is_active")
+
   maxProducts         Int
   maxEmployees        Int
   maxInvoicesPerMonth Int
   features            Json     @default("{}")
   createdAt           DateTime @default(now()) @map("created_at") @db.Timestamp(6)
   updatedAt           DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+
   tenants             Tenant[]
+  tenantSubscriptions TenantSubscription[]
+  platformConfigs     PlatformConfig[]
 
   @@map("plans")
 }
 
 model Tenant {
-  id                    String                    @id @default(uuid()) @db.Uuid
-  name                  String                    @db.VarChar(100)
-  slug                  String                    @unique @db.VarChar(100)
-  logoUrl               String?                   @map("logo_url") @db.VarChar(255)
-  address               String?                   @db.Text
-  phone                 String?                   @db.VarChar(20)
-  currency              String                    @default("USD") @db.VarChar(10)
-  settings              Json                      @default("{}")
-  status                String                    @default("ACTIVE") @db.VarChar(20)
-  planId                String                    @map("plan_id") @db.Uuid
-  subscriptionExpiresAt DateTime                  @map("subscription_expires_at") @db.Timestamp(6)
-  createdAt             DateTime                  @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt             DateTime                  @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
-  plan                  Plan                      @relation(fields: [planId], references: [id], onDelete: Restrict)
-  users                 User[]
-  roles                 Role[]
-  customers             Customer[]
-  suppliers             Supplier[]
-  products              Product[]
-  invoices              Invoice[]
-  subscriptionTx        SubscriptionTransaction[]
-  inventoryTx           InventoryTransaction[]
-  activityLogs          ActivityLog[]
-  notifications         Notification[]
-  categories            Category[]
-  brands                Brand[]
-  units                 Unit[]
-  taxes                 Tax[]
-  productImages         ProductImage[]
-  invoiceItems          InvoiceItem[]
-  invoicePayments       InvoicePayment[]
-  purchases             Purchase[]
-  purchaseItems         PurchaseItem[]
-  returns               Return[]
-  returnItems           ReturnItem[]
-  offers                Offer[]
-  coupons               Coupon[]
-  loyaltyTransactions   LoyaltyTransaction[]
+  id                    String   @id @default(uuid()) @db.Uuid
+  name                  String   @db.VarChar(100)
+  slug                  String   @unique @db.VarChar(100)
+  logoUrl               String?  @map("logo_url") @db.VarChar(255)
+  address               String?  @db.Text
+  phone                 String?  @db.VarChar(20)
+  currency              String   @default("USD") @db.VarChar(10)
+  settings              Json     @default("{}")
+  status                String   @default("ACTIVE") @db.VarChar(20)
+  planId                String   @map("plan_id") @db.Uuid
+  subscriptionId        String?  @map("subscription_id") @db.Uuid
+  subscriptionExpiresAt DateTime @map("subscription_expires_at") @db.Timestamp(6)
+  createdAt             DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt             DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  plan                Plan                      @relation(fields: [planId], references: [id], onDelete: Restrict)
+  usageMetric         UsageMetric?
+  subscriptions       TenantSubscription[]
+  users               User[]
+  roles               Role[]
+  customers           Customer[]
+  suppliers           Supplier[]
+  products            Product[]
+  invoices            Invoice[]
+  subscriptionTx      SubscriptionTransaction[]
+  inventoryTx         InventoryTransaction[]
+  activityLogs        ActivityLog[]
+  notifications       Notification[]
+  categories          Category[]
+  brands              Brand[]
+  units               Unit[]
+  taxes               Tax[]
+  productImages       ProductImage[]
+  invoiceItems        InvoiceItem[]
+  invoicePayments     InvoicePayment[]
+  purchases           Purchase[]
+  purchaseItems       PurchaseItem[]
+  returns             Return[]
+  returnItems         ReturnItem[]
+  offers              Offer[]
+  coupons             Coupon[]
+  loyaltyTransactions LoyaltyTransaction[]
 
   @@index([status])
   @@map("tenants")
@@ -84,6 +157,42 @@ model SubscriptionTransaction {
 
   @@index([tenantId])
   @@map("subscription_transactions")
+}
+
+model TenantSubscription {
+  id            String    @id @default(uuid()) @db.Uuid
+  tenantId      String    @map("tenant_id") @db.Uuid
+  planId        String    @map("plan_id") @db.Uuid
+  status        String    @db.VarChar(20)
+  billingCycle  String    @map("billing_cycle") @db.VarChar(20)
+  startsAt      DateTime  @map("starts_at") @db.Timestamp(6)
+  expiresAt     DateTime  @map("expires_at") @db.Timestamp(6)
+  nextRenewalAt DateTime? @map("next_renewal_at") @db.Timestamp(6)
+  autoRenew     Boolean   @default(true) @map("auto_renew")
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt     DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  plan   Plan   @relation(fields: [planId], references: [id], onDelete: Restrict)
+
+  @@index([tenantId])
+  @@map("tenant_subscriptions")
+}
+
+model UsageMetric {
+  id                String   @id @default(uuid()) @db.Uuid
+  tenantId          String   @unique @map("tenant_id") @db.Uuid
+  productsUsed      Int      @default(0) @map("products_used")
+  employeesUsed     Int      @default(0) @map("employees_used")
+  customersUsed     Int      @default(0) @map("customers_used")
+  invoicesThisMonth Int      @default(0) @map("invoices_this_month")
+  storageUsedMB     Decimal  @default(0.00) @map("storage_used_mb") @db.Decimal(10, 2)
+  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt         DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("usage_metrics")
 }
 
 // ==========================================

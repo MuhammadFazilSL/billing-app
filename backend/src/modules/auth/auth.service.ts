@@ -188,12 +188,21 @@ export class AuthService {
       }
     });
 
-    if (!user) {
-      throw new UnauthorizedException('User not found');
+    if (user) {
+      const { passwordHash, hashedRefreshToken, ...safeUser } = user;
+      return safeUser;
     }
 
-    const { passwordHash, hashedRefreshToken, ...safeUser } = user;
-    return safeUser;
+    const platformAdmin = await this.prisma.platformAdmin.findUnique({
+      where: { id: userId }
+    });
+
+    if (platformAdmin) {
+      const { password, ...safeAdmin } = platformAdmin;
+      return safeAdmin;
+    }
+
+    throw new UnauthorizedException('User not found');
   }
 
   private async generateTokens(userId: string, email: string, tenantId: string | null) {

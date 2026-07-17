@@ -3,13 +3,15 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { CreateInvoiceDto } from './dto/create-invoice.dto';
 import { InventoryService } from '../inventory/inventory.service';
 import { LoyaltyService } from '../loyalty/loyalty.service';
+import { UsageService } from '../usage/usage.service';
 
 @Injectable()
 export class InvoicesService {
   constructor(
     private prisma: PrismaService,
     private inventoryService: InventoryService,
-    private loyaltyService: LoyaltyService
+    private loyaltyService: LoyaltyService,
+    private usageService: UsageService
   ) {}
 
   async create(tenantId: string, userId: string, createInvoiceDto: CreateInvoiceDto) {
@@ -109,6 +111,8 @@ export class InvoicesService {
 
         await this.loyaltyService.earnPoints(tx, tenantId, createInvoiceDto.customerId, invoice.id, createInvoiceDto.grandTotal);
       }
+
+      await this.usageService.incrementInvoices(tenantId);
 
       return invoice;
     });
