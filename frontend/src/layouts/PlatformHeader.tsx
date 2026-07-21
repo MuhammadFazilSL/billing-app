@@ -29,10 +29,10 @@ export function PlatformHeader() {
         <div className="h-8 w-px bg-gray-200 mx-2"></div>
         
         <div className="flex items-center gap-3">
-          <div className="flex flex-col items-end">
-            <span className="text-sm font-medium text-gray-900">{user?.name}</span>
-            <span className="text-xs text-gray-500 uppercase">{user?.role}</span>
-          </div>
+              <div className="hidden md:block text-sm text-right">
+                <p className="font-medium text-gray-700">{(user as any)?.name || 'Admin'}</p>
+                <p className="text-gray-500 text-xs">{(user as any)?.role?.replace('_', ' ') || 'Platform Admin'}</p>
+              </div>
           <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 flex items-center justify-center text-white shadow-md">
             <UserIcon className="w-5 h-5" />
           </div>

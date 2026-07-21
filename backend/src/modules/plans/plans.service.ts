@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
@@ -29,8 +29,16 @@ export class PlansService {
   }
 
   async delete(id: string) {
-    return this.prisma.plan.delete({
+    const activeSub = await this.prisma.tenantSubscription.findFirst({
+      where: { planId: id, status: 'ACTIVE' },
+    });
+    if (activeSub) {
+      throw new BadRequestException('Cannot delete plan with active subscriptions');
+    }
+
+    return this.prisma.plan.update({
       where: { id },
+      data: { isActive: false },
     });
   }
 }

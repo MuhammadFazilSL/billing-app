@@ -79,7 +79,23 @@ model Plan {
   maxCustomers   Int      @default(0) @map("max_customers")
   maxBranches    Int      @default(1) @map("max_branches")
   storageLimitMB Int      @default(100) @map("storage_limit_mb")
+  trialDays      Int      @default(14) @map("trial_days")
   isActive       Boolean  @default(true) @map("is_active")
+
+  // Feature Toggles
+  inventoryEnabled   Boolean @default(true) @map("inventory_enabled")
+  billingEnabled     Boolean @default(true) @map("billing_enabled")
+  purchasesEnabled   Boolean @default(true) @map("purchases_enabled")
+  returnsEnabled     Boolean @default(true) @map("returns_enabled")
+  reportsEnabled     Boolean @default(true) @map("reports_enabled")
+  offersEnabled      Boolean @default(true) @map("offers_enabled")
+  couponsEnabled     Boolean @default(true) @map("coupons_enabled")
+  loyaltyEnabled     Boolean @default(true) @map("loyalty_enabled")
+  multiBranchEnabled Boolean @default(false) @map("multi_branch_enabled")
+  apiAccessEnabled   Boolean @default(false) @map("api_access_enabled")
+  prioritySupport    Boolean @default(false) @map("priority_support")
+  auditLogsEnabled   Boolean @default(false) @map("audit_logs_enabled")
+  backupsEnabled     Boolean @default(false) @map("backups_enabled")
 
   maxProducts         Int
   maxEmployees        Int

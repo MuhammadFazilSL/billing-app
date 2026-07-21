@@ -3,14 +3,23 @@ import { useSelector } from 'react-redux';
 import { PlatformSidebar } from './PlatformSidebar';
 import { PlatformHeader } from './PlatformHeader';
 import { RootState } from '../store/store';
+import { Loading } from '../components/ui/Loading';
 
 export function PlatformLayout() {
-  const { user, accessToken } = useSelector((state: RootState) => state.auth);
+  const { user, accessToken, isLoading } = useSelector((state: RootState) => state.auth);
   const location = useLocation();
 
+  if (isLoading) {
+    return <Loading fullScreen />;
+  }
+
   // Redirect to platform login if not authenticated or not a platform admin
-  if (!accessToken || !user || user.role !== 'SUPER_ADMIN') {
+  if (!accessToken || !user) {
     return <Navigate to="/platform/login" state={{ from: location }} replace />;
+  }
+
+  if ((user as any)?.role !== 'SUPER_ADMIN') {
+    return <Navigate to="/unauthorized" replace />;
   }
 
   return (

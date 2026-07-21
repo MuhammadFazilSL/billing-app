@@ -30,6 +30,7 @@ import { PlatformModule } from './modules/platform/platform.module';
 import { PlansModule } from './modules/plans/plans.module';
 import { SubscriptionsModule } from './modules/subscriptions/subscriptions.module';
 import { UsageModule } from './modules/usage/usage.module';
+import { PlatformSettingsModule } from './modules/platform-settings/platform-settings.module';
 
 @Module({
   imports: [
@@ -67,6 +68,7 @@ import { UsageModule } from './modules/usage/usage.module';
     PlansModule,
     SubscriptionsModule,
     UsageModule,
+    PlatformSettingsModule,
   ],
   controllers: [],
   providers: [],
