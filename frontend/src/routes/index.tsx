@@ -57,7 +57,16 @@ import { CustomerReport } from '../features/reports/pages/CustomerReport';
 import { SupplierReport } from '../features/reports/pages/SupplierReport';
 import { TaxReport } from '../features/reports/pages/TaxReport';
 import { ProfitLossReport } from '../features/reports/pages/ProfitLossReport';
-import { Settings } from '../features/settings/pages/Settings';
+import { SettingsLayout } from '../features/settings/pages/SettingsLayout';
+import { CompanySettings } from '../features/settings/pages/CompanySettings';
+import { BranchSettings } from '../features/settings/pages/BranchSettings';
+import { InvoiceSettings } from '../features/settings/pages/InvoiceSettings';
+import { TaxSettings } from '../features/settings/pages/TaxSettings';
+import { PrinterSettings } from '../features/settings/pages/PrinterSettings';
+import { EmailSettings } from '../features/settings/pages/EmailSettings';
+import { RegionalSettings } from '../features/settings/pages/RegionalSettings';
+import { UserPreferences } from '../features/settings/pages/UserPreferences';
+import { BackupSettings } from '../features/settings/pages/BackupSettings';
 import { Subscription } from '../features/subscription/pages/Subscription';
 
 // Misc Pages
@@ -164,7 +173,17 @@ export const AppRoutes = () => {
           <Route path="reports/taxes" element={<TaxReport />} />
           <Route path="reports/profit-loss" element={<ProfitLossReport />} />
           
-          <Route path="settings" element={<Settings />} />
+          <Route path="settings" element={<SettingsLayout />}>
+            <Route path="company" element={<CompanySettings />} />
+            <Route path="branches" element={<BranchSettings />} />
+            <Route path="invoice" element={<InvoiceSettings />} />
+            <Route path="tax" element={<TaxSettings />} />
+            <Route path="printer" element={<PrinterSettings />} />
+            <Route path="email" element={<EmailSettings />} />
+            <Route path="regional" element={<RegionalSettings />} />
+            <Route path="preferences" element={<UserPreferences />} />
+            <Route path="backup" element={<BackupSettings />} />
+          </Route>
           <Route path="subscription" element={<Subscription />} />
         </Route>
       </Route>

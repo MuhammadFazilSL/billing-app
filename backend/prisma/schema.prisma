@@ -129,6 +129,9 @@ model Tenant {
 
   plan                Plan                      @relation(fields: [planId], references: [id], onDelete: Restrict)
   usageMetric         UsageMetric?
+  companyProfile      CompanyProfile?
+  tenantSettings      TenantSettings?
+  branches            Branch[]
   subscriptions       TenantSubscription[]
   users               User[]
   roles               Role[]
@@ -157,6 +160,111 @@ model Tenant {
 
   @@index([status])
   @@map("tenants")
+}
+
+model CompanyProfile {
+  id          String   @id @default(uuid()) @db.Uuid
+  tenantId    String   @unique @map("tenant_id") @db.Uuid
+  companyName String   @map("company_name") @db.VarChar(100)
+  legalName   String?  @map("legal_name") @db.VarChar(100)
+  logo        String?  @db.VarChar(255)
+  gstNumber   String?  @map("gst_number") @db.VarChar(50)
+  panNumber   String?  @map("pan_number") @db.VarChar(50)
+  phone       String?  @db.VarChar(20)
+  email       String?  @db.VarChar(100)
+  website     String?  @db.VarChar(150)
+  address     String?  @db.Text
+  city        String?  @db.VarChar(100)
+  state       String?  @db.VarChar(100)
+  country     String?  @db.VarChar(100)
+  postalCode  String?  @map("postal_code") @db.VarChar(20)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("company_profiles")
+}
+
+model Branch {
+  id          String   @id @default(uuid()) @db.Uuid
+  tenantId    String   @map("tenant_id") @db.Uuid
+  name        String   @db.VarChar(100)
+  code        String?  @db.VarChar(50)
+  managerName String?  @map("manager_name") @db.VarChar(100)
+  phone       String?  @db.VarChar(20)
+  email       String?  @db.VarChar(100)
+  address     String?  @db.Text
+  city        String?  @db.VarChar(100)
+  state       String?  @db.VarChar(100)
+  country     String?  @db.VarChar(100)
+  postalCode  String?  @map("postal_code") @db.VarChar(20)
+  isDefault   Boolean  @default(false) @map("is_default")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+  deletedAt   DateTime? @map("deleted_at") @db.Timestamp(6)
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@map("branches")
+}
+
+model TenantSettings {
+  id                  String   @id @default(uuid()) @db.Uuid
+  tenantId            String   @unique @map("tenant_id") @db.Uuid
+  
+  // General
+  timezone            String   @default("UTC") @db.VarChar(50)
+  language            String   @default("en") @db.VarChar(20)
+  currency            String   @default("USD") @db.VarChar(10)
+  currencySymbol      String   @default("$") @map("currency_symbol") @db.VarChar(10)
+  dateFormat          String   @default("YYYY-MM-DD") @map("date_format") @db.VarChar(20)
+  numberFormat        String   @default("en-US") @map("number_format") @db.VarChar(20)
+
+  // Invoice
+  invoicePrefix       String?  @map("invoice_prefix") @db.VarChar(20)
+  invoiceSuffix       String?  @map("invoice_suffix") @db.VarChar(20)
+  nextInvoiceNumber   Int      @default(1) @map("next_invoice_number")
+  receiptFooter       String?  @map("receipt_footer") @db.Text
+  showLogo            Boolean  @default(true) @map("show_logo")
+  showTax             Boolean  @default(true) @map("show_tax")
+  showBarcode         Boolean  @default(true) @map("show_barcode")
+  thermalReceiptWidth String   @default("80mm") @map("thermal_receipt_width") @db.VarChar(20)
+
+  // Tax
+  defaultTaxId        String?  @map("default_tax_id") @db.Uuid
+  taxInclusive        Boolean  @default(false) @map("tax_inclusive")
+
+  // Printer
+  printerType         String   @default("A4") @map("printer_type") @db.VarChar(50)
+  paperSize           String   @default("A4") @map("paper_size") @db.VarChar(50)
+  copies              Int      @default(1)
+
+  // Email
+  smtpHost            String?  @map("smtp_host") @db.VarChar(255)
+  smtpPort            Int?     @map("smtp_port")
+  smtpUsername        String?  @map("smtp_username") @db.VarChar(255)
+  smtpPassword        String?  @map("smtp_password") @db.VarChar(255)
+  senderName          String?  @map("sender_name") @db.VarChar(100)
+  senderEmail         String?  @map("sender_email") @db.VarChar(100)
+
+  // Preferences
+  darkMode            Boolean  @default(false) @map("dark_mode")
+  compactSidebar      Boolean  @default(false) @map("compact_sidebar")
+  dashboardLayout     String   @default("default") @map("dashboard_layout") @db.VarChar(50)
+
+  // Backup
+  autoBackup          Boolean  @default(false) @map("auto_backup")
+  backupFrequency     String   @default("daily") @map("backup_frequency") @db.VarChar(50)
+
+  createdAt           DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt           DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("tenant_settings")
 }
 
 model SubscriptionTransaction {

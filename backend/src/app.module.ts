@@ -31,6 +31,8 @@ import { PlansModule } from './modules/plans/plans.module';
 import { SubscriptionsModule } from './modules/subscriptions/subscriptions.module';
 import { UsageModule } from './modules/usage/usage.module';
 import { PlatformSettingsModule } from './modules/platform-settings/platform-settings.module';
+import { BranchesModule } from './modules/branches/branches.module';
+import { SettingsModule } from './modules/settings/settings.module';
 
 @Module({
   imports: [
@@ -69,6 +71,8 @@ import { PlatformSettingsModule } from './modules/platform-settings/platform-set
     SubscriptionsModule,
     UsageModule,
     PlatformSettingsModule,
+    BranchesModule,
+    SettingsModule,
   ],
   controllers: [],
   providers: [],
