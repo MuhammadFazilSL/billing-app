@@ -1,5 +1,5 @@
 import React from 'react';
-import { Printer, Download, X, FileText } from 'lucide-react';
+import { Printer, X } from 'lucide-react';
 
 interface PrintToolbarProps {
   invoiceNumber: string;

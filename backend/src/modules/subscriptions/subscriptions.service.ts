@@ -5,6 +5,45 @@ import { PrismaService } from '../../prisma/prisma.service';
 export class SubscriptionsService {
   constructor(private prisma: PrismaService) {}
 
+  async getCurrentSubscription(tenantId: string) {
+    const tenant = await this.prisma.tenant.findUnique({
+      where: { id: tenantId },
+      include: {
+        subscriptions: {
+          include: {
+            plan: true,
+          }
+        },
+      }
+    });
+
+    if (!tenant) throw new NotFoundException('Tenant not found');
+
+    const activeSubscription = tenant.subscriptions?.find(sub => sub.status === 'ACTIVE' || sub.status === 'TRIALING') || tenant.subscriptions?.[0];
+
+    if (activeSubscription) {
+      return activeSubscription;
+    }
+
+    if (tenant.planId) {
+      const plan = await this.prisma.plan.findUnique({ where: { id: tenant.planId } });
+      if (plan) {
+        return {
+          tenantId: tenant.id,
+          planId: plan.id,
+          plan: plan,
+          status: 'ACTIVE',
+          billingCycle: 'MONTHLY',
+          startsAt: tenant.createdAt,
+          expiresAt: tenant.subscriptionExpiresAt || new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
+          nextRenewalAt: tenant.subscriptionExpiresAt,
+        };
+      }
+    }
+
+    throw new NotFoundException('No active subscription found');
+  }
+
   async getAll() {
     return this.prisma.tenantSubscription.findMany({
       include: {

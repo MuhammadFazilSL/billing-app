@@ -14,7 +14,7 @@ import { QuickActions } from '../../../components/dashboard/QuickActions';
 
 import { 
   DollarSign, ShoppingCart, TrendingUp, Package, 
-  Users, UserCheck, AlertTriangle, XCircle, Tag, HeartHandshake, Briefcase 
+  Users, Briefcase, Tag 
 } from 'lucide-react';
 
 export const Dashboard: React.FC = () => {

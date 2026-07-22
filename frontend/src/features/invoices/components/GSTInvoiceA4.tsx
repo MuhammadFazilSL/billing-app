@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import { forwardRef } from 'react';
 import { InvoiceHeader } from './InvoiceHeader';
 import { InvoiceItemsTable } from './InvoiceItemsTable';
 import { InvoiceTaxSummary } from './InvoiceTaxSummary';

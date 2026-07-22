@@ -14,12 +14,12 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({ invoice, onClose
   const thermalRef = useRef<HTMLDivElement>(null);
 
   const handlePrintA4 = useReactToPrint({
-    content: () => a4Ref.current,
+    contentRef: a4Ref,
     documentTitle: `Invoice_${invoice?.invoiceNumber}_A4`,
   });
 
   const handlePrintThermal = useReactToPrint({
-    content: () => thermalRef.current,
+    contentRef: thermalRef,
     documentTitle: `Invoice_${invoice?.invoiceNumber}_Thermal`,
   });
 

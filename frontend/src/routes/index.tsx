@@ -51,7 +51,7 @@ import { Usage } from '../features/platform/pages/Usage';
 import { Settings as PlatformSettings } from '../features/platform/pages/Settings';
 import { ReportsDashboard } from '../features/reports/pages/ReportsDashboard';
 import { SalesReport } from '../features/reports/pages/SalesReport';
-import { PurchaseReport } from '../features/reports/pages/PurchaseReport';
+
 import { InventoryReport } from '../features/reports/pages/InventoryReport';
 import { CustomerReport } from '../features/reports/pages/CustomerReport';
 import { SupplierReport } from '../features/reports/pages/SupplierReport';
