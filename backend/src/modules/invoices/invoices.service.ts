@@ -150,7 +150,13 @@ export class InvoicesService {
         invoiceItems: true,
         payments: true,
         customer: true,
-        user: { select: { firstName: true, lastName: true } }
+        user: { select: { firstName: true, lastName: true } },
+        tenant: {
+          include: {
+            companyProfile: true,
+            branches: true,
+          }
+        }
       }
     });
     
