@@ -97,6 +97,7 @@ export const AppRoutes = () => {
         } catch (error) {
           // Token is likely invalid or expired (and refresh failed)
           dispatch(logout());
+          window.location.href = '/auth/login';
         }
       }
       dispatch(setLoading(false));
