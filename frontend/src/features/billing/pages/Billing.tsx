@@ -8,6 +8,9 @@ import { couponsApi } from '../../../api/coupons';
 import { offersApi } from '../../../api/offers';
 import { loyaltyApi } from '../../../api/loyalty';
 import { Breadcrumb } from '../../../layouts/Breadcrumb';
+import { ScannerModal } from '../../../components/scanner/ScannerModal';
+import { ScanBarcode } from 'lucide-react';
+import { PendingSyncBadge } from '../../../components/offline/PendingSyncBadge';
 
 interface CartItem {
   productId: string;
@@ -30,6 +33,24 @@ export const Billing: React.FC = () => {
   const [selectedCustomerId, setSelectedCustomerId] = useState<string>('');
   const [paymentMethod, setPaymentMethod] = useState<string>('CASH');
   const [notes, setNotes] = useState('');
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
+  
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
+  const [pendingCount, setPendingCount] = useState(() => {
+    const saved = localStorage.getItem('pendingInvoices');
+    return saved ? JSON.parse(saved).length : 0;
+  });
+
+  React.useEffect(() => {
+    const handleOnline = () => setIsOffline(false);
+    const handleOffline = () => setIsOffline(true);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
   
   const [couponCode, setCouponCode] = useState('');
   const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
@@ -238,14 +259,28 @@ export const Billing: React.FC = () => {
       items: totals.finalCart
     };
 
-    generateMut.mutate(payload);
+    if (isOffline) {
+      const saved = localStorage.getItem('pendingInvoices');
+      const pending = saved ? JSON.parse(saved) : [];
+      pending.push({ ...payload, id: `offline-${Date.now()}` });
+      localStorage.setItem('pendingInvoices', JSON.stringify(pending));
+      setPendingCount(pending.length);
+      
+      setCart([]);
+      setSelectedCustomerId('');
+      setNotes('');
+      alert('You are offline. Invoice saved locally and will sync later.');
+    } else {
+      generateMut.mutate(payload);
+    }
   };
 
   return (
     <div className="space-y-6">
       <Breadcrumb />
-      <div>
+      <div className="flex items-center gap-4">
         <h1 className="text-3xl font-bold tracking-tight">Point of Sale (Billing)</h1>
+        <PendingSyncBadge count={pendingCount} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -262,9 +297,19 @@ export const Billing: React.FC = () => {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 autoFocus
               />
+              <button type="button" onClick={() => setIsScannerOpen(true)} className="h-10 px-4 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 flex items-center gap-2 transition-colors">
+                <ScanBarcode className="w-5 h-5" />
+              </button>
               <button type="submit" className="h-10 px-4 rounded-md bg-primary text-primary-foreground">Add to Cart</button>
             </form>
           </div>
+
+          <ScannerModal
+            isOpen={isScannerOpen}
+            onClose={() => setIsScannerOpen(false)}
+            products={products}
+            onProductFound={(product) => addToCart(product)}
+          />
 
           {/* Cart Table */}
           <div className="bg-card text-card-foreground rounded-lg shadow-sm border overflow-hidden">

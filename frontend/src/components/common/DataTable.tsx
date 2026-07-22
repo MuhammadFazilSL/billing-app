@@ -16,6 +16,7 @@ interface DataTableProps {
   onEdit?: (row: any) => void;
   onDelete?: (row: any) => void;
   searchPlaceholder?: string;
+  extraActions?: React.ReactNode;
 }
 
 export const DataTable: React.FC<DataTableProps> = ({
@@ -27,6 +28,7 @@ export const DataTable: React.FC<DataTableProps> = ({
   onEdit,
   onDelete,
   searchPlaceholder = 'Search...',
+  extraActions,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -59,6 +61,7 @@ export const DataTable: React.FC<DataTableProps> = ({
               <Plus className="mr-2 h-4 w-4" /> Add New
             </button>
           )}
+          {extraActions && extraActions}
         </div>
       </div>
       <div className="overflow-x-auto">

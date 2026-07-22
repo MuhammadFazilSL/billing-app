@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, UseGuards, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseGuards, Query, BadRequestException } from '@nestjs/common';
 import { InvoicesService } from './invoices.service';
 import { CreateInvoiceDto } from './dto/create-invoice.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -16,6 +16,9 @@ export class InvoicesController {
   @Post()
   @ApiOperation({ summary: 'Create a new invoice (POS Sale)' })
   create(@CurrentUser() user: any, @Body() createInvoiceDto: CreateInvoiceDto) {
+    if (!user.tenantId) {
+      throw new BadRequestException('User does not belong to a valid tenant.');
+    }
     return this.invoicesService.create(user.tenantId, user.id, createInvoiceDto);
   }
 
@@ -27,12 +30,18 @@ export class InvoicesController {
     @Query('limit') limit: string = '50',
     @Query('search') search?: string,
   ) {
+    if (!user.tenantId) {
+      throw new BadRequestException('User does not belong to a valid tenant.');
+    }
     return this.invoicesService.findAll(user.tenantId, parseInt(page, 10), parseInt(limit, 10), search);
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Get invoice details' })
   findOne(@Param('id') id: string, @CurrentUser() user: any) {
+    if (!user.tenantId) {
+      throw new BadRequestException('User does not belong to a valid tenant.');
+    }
     return this.invoicesService.findOne(id, user.tenantId);
   }
 }
