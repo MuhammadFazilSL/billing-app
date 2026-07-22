@@ -3,12 +3,14 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
 import { UsageService } from '../usage/usage.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class CustomersService {
   constructor(
     private prisma: PrismaService,
-    private usageService: UsageService
+    private usageService: UsageService,
+    private notificationsService: NotificationsService
   ) {}
 
   async create(tenantId: string, createCustomerDto: CreateCustomerDto) {
@@ -19,6 +21,17 @@ export class CustomersService {
       },
     });
     await this.usageService.incrementCustomers(tenantId);
+    
+    await this.notificationsService.emitNotification({
+      tenantId,
+      module: 'Customers',
+      type: 'INFO',
+      title: 'New Customer Added',
+      message: `Customer ${customer.name} has been added.`,
+      referenceId: customer.id,
+      referenceType: 'Customer',
+    });
+
     return customer;
   }
 

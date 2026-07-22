@@ -1,6 +1,7 @@
 import React from 'react';
 import { Menu } from 'lucide-react';
 import { ProfileMenu } from './ProfileMenu';
+import { NotificationBell } from '../components/notifications/NotificationBell';
 
 export const Header: React.FC = () => {
   return (
@@ -14,6 +15,7 @@ export const Header: React.FC = () => {
       </div>
       
       <div className="flex items-center gap-4">
+        <NotificationBell />
         <ProfileMenu />
       </div>
     </header>

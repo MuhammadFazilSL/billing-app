@@ -4,12 +4,14 @@ import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
 import * as bcrypt from 'bcrypt';
 import { UsageService } from '../usage/usage.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class EmployeesService {
   constructor(
     private prisma: PrismaService,
-    private usageService: UsageService
+    private usageService: UsageService,
+    private notificationsService: NotificationsService
   ) {}
 
   async create(tenantId: string, createEmployeeDto: CreateEmployeeDto) {
@@ -45,6 +47,17 @@ export class EmployeesService {
     });
     
     await this.usageService.incrementEmployees(tenantId);
+
+    await this.notificationsService.emitNotification({
+      tenantId,
+      module: 'Employees',
+      type: 'INFO',
+      title: 'Employee Added',
+      message: `Employee ${user.firstName} ${user.lastName} has been added.`,
+      referenceId: user.id,
+      referenceType: 'Employee',
+    });
+
     return user;
   }
 

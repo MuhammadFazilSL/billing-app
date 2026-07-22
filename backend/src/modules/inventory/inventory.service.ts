@@ -2,10 +2,14 @@ import { Injectable, BadRequestException, NotFoundException } from '@nestjs/comm
 import { PrismaService } from '../../prisma/prisma.service';
 import { OpeningStockDto } from './dto/opening-stock.dto';
 import { AdjustmentDto } from './dto/adjustment.dto';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class InventoryService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private notificationsService: NotificationsService
+  ) {}
 
   async addOpeningStock(tenantId: string, userId: string, dto: OpeningStockDto) {
     return this.prisma.$transaction(async (tx) => {
@@ -55,7 +59,7 @@ export class InventoryService {
   }
 
   async addAdjustment(tenantId: string, userId: string, dto: AdjustmentDto) {
-    return this.prisma.$transaction(async (tx) => {
+    const result = await this.prisma.$transaction(async (tx) => {
       const product = await tx.product.findFirst({
         where: { id: dto.productId, tenantId, deletedAt: null },
       });
@@ -97,6 +101,12 @@ export class InventoryService {
 
       return transaction;
     });
+
+    if (result) {
+      await this.checkLowStock(tenantId, dto.productId);
+    }
+    
+    return result;
   }
 
   async recordSale(tx: any, tenantId: string, userId: string, invoiceId: string, items: any[]) {
@@ -111,9 +121,11 @@ export class InventoryService {
 
       const currentStock = Number(product.stock);
       
-      // We allow stock to go negative for sales, or we could prevent it depending on business rules.
       // Usually POS allows negative stock to not block checkout, but let's assume we just decrement it.
       const balanceAfterTransaction = currentStock - item.quantity;
+      
+      // Async emit low stock check outside tx wait
+      this.checkLowStock(tenantId, item.productId, balanceAfterTransaction);
 
       await tx.inventoryTransaction.create({
         data: {
@@ -297,5 +309,38 @@ export class InventoryService {
       totalValue,
       totalSKUs: products.length,
     };
+  }
+
+  private async checkLowStock(tenantId: string, productId: string, knownStock?: number) {
+    const product = await this.prisma.product.findUnique({
+      where: { id: productId }
+    });
+    
+    if (!product) return;
+
+    const currentStock = knownStock !== undefined ? knownStock : Number(product.stock);
+    const minStock = Number(product.minimumStock || 0);
+
+    if (currentStock <= 0) {
+      await this.notificationsService.emitNotification({
+        tenantId,
+        module: 'Inventory',
+        type: 'ERROR',
+        title: 'Out of Stock',
+        message: `Product ${product.name} is out of stock.`,
+        referenceId: product.id,
+        referenceType: 'Product',
+      });
+    } else if (currentStock <= minStock) {
+      await this.notificationsService.emitNotification({
+        tenantId,
+        module: 'Inventory',
+        type: 'WARNING',
+        title: 'Low Stock Alert',
+        message: `Product ${product.name} is running low on stock (${currentStock} remaining).`,
+        referenceId: product.id,
+        referenceType: 'Product',
+      });
+    }
   }
 }

@@ -34,6 +34,7 @@ import { UsageModule } from './modules/usage/usage.module';
 import { PlatformSettingsModule } from './modules/platform-settings/platform-settings.module';
 import { BranchesModule } from './modules/branches/branches.module';
 import { SettingsModule } from './modules/settings/settings.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
 
 @Module({
   imports: [
@@ -75,6 +76,7 @@ import { SettingsModule } from './modules/settings/settings.module';
     PlatformSettingsModule,
     BranchesModule,
     SettingsModule,
+    NotificationsModule,
   ],
   controllers: [],
   providers: [],

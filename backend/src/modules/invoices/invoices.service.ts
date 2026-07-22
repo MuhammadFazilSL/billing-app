@@ -4,6 +4,7 @@ import { CreateInvoiceDto } from './dto/create-invoice.dto';
 import { InventoryService } from '../inventory/inventory.service';
 import { LoyaltyService } from '../loyalty/loyalty.service';
 import { UsageService } from '../usage/usage.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class InvoicesService {
@@ -11,11 +12,12 @@ export class InvoicesService {
     private prisma: PrismaService,
     private inventoryService: InventoryService,
     private loyaltyService: LoyaltyService,
-    private usageService: UsageService
+    private usageService: UsageService,
+    private notificationsService: NotificationsService
   ) {}
 
   async create(tenantId: string, userId: string, createInvoiceDto: CreateInvoiceDto) {
-    return this.prisma.$transaction(async (tx) => {
+    const result = await this.prisma.$transaction(async (tx) => {
       // 1. Generate Invoice Number (e.g., INV-20260716-000001)
       const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
       const countToday = await tx.invoice.count({
@@ -112,10 +114,26 @@ export class InvoicesService {
         await this.loyaltyService.earnPoints(tx, tenantId, createInvoiceDto.customerId, invoice.id, createInvoiceDto.grandTotal);
       }
 
+      // 9. Increment Monthly Invoice Usage limit
       await this.usageService.incrementInvoices(tenantId);
 
       return invoice;
     });
+    
+    // Emit Notification outside transaction
+    if (result) {
+      await this.notificationsService.emitNotification({
+        tenantId,
+        module: 'Billing',
+        type: 'SUCCESS',
+        title: 'New Sale Completed',
+        message: `Invoice ${result.invoiceNumber} created for ${result.grandTotal}.`,
+        referenceId: result.id,
+        referenceType: 'Invoice',
+      });
+    }
+
+    return result;
   }
 
   async findAll(tenantId: string, page = 1, limit = 50, search?: string) {

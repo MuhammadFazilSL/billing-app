@@ -87,7 +87,7 @@ export const ActivityTable: React.FC<ActivityTableProps> = ({ recentActivity }) 
               </tr>
             </thead>
             <tbody>
-              {currentTab.data.map((item, i) => (
+              {currentTab.data.map((item) => (
                 <tr 
                   key={item.id} 
                   className="border-b last:border-0 hover:bg-muted/30 cursor-pointer transition-colors"

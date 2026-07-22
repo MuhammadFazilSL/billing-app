@@ -68,6 +68,7 @@ import { RegionalSettings } from '../features/settings/pages/RegionalSettings';
 import { UserPreferences } from '../features/settings/pages/UserPreferences';
 import { BackupSettings } from '../features/settings/pages/BackupSettings';
 import { Subscription } from '../features/subscription/pages/Subscription';
+import { Notifications } from '../features/notifications/pages/Notifications';
 
 // Misc Pages
 import { NotFound } from '../pages/NotFound';
@@ -135,6 +136,8 @@ export const AppRoutes = () => {
           <Route element={<PermissionRoute permission={PERMISSIONS.DASHBOARD_VIEW} />}>
             <Route path="dashboard" element={<Dashboard />} />
           </Route>
+          
+          <Route path="notifications" element={<Notifications />} />
           
           <Route element={<PermissionRoute permission={PERMISSIONS.PRODUCTS_VIEW} />}>
             <Route path="products" element={<Products />} />

@@ -2,16 +2,18 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreatePurchaseDto } from './dto/create-purchase.dto';
 import { InventoryService } from '../inventory/inventory.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class PurchasesService {
   constructor(
     private prisma: PrismaService,
-    private inventoryService: InventoryService
+    private inventoryService: InventoryService,
+    private notificationsService: NotificationsService
   ) {}
 
   async create(tenantId: string, userId: string, createPurchaseDto: CreatePurchaseDto) {
-    return this.prisma.$transaction(async (tx) => {
+    const result = await this.prisma.$transaction(async (tx) => {
       // 1. Generate Purchase Number (e.g., PO-20260716-000001)
       const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
       const countToday = await tx.purchase.count({
@@ -72,6 +74,20 @@ export class PurchasesService {
 
       return purchase;
     });
+
+    if (result) {
+      await this.notificationsService.emitNotification({
+        tenantId,
+        module: 'Purchases',
+        type: 'SUCCESS',
+        title: 'Purchase Created',
+        message: `Purchase ${result.purchaseNumber} created for ${result.grandTotal}.`,
+        referenceId: result.id,
+        referenceType: 'Purchase',
+      });
+    }
+
+    return result;
   }
 
   async findAll(tenantId: string, page = 1, limit = 50, search?: string) {

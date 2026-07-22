@@ -1,10 +1,14 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AssignRoleDto } from './dto/assign-role.dto';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class RolesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private notificationsService: NotificationsService
+  ) {}
 
   async findAll(tenantId: string) {
     return this.prisma.role.findMany({
@@ -46,12 +50,24 @@ export class RolesService {
       throw new BadRequestException('Role is already assigned to this user');
     }
 
-    return this.prisma.userRole.create({
+    const assignment = await this.prisma.userRole.create({
       data: {
         userId: assignRoleDto.userId,
         roleId: assignRoleDto.roleId,
       }
     });
+    
+    await this.notificationsService.emitNotification({
+      tenantId,
+      module: 'Platform',
+      type: 'INFO',
+      title: 'Role Assigned',
+      message: `Role ${role.name} was assigned to user.`,
+      referenceId: user.id,
+      referenceType: 'Employee',
+    });
+    
+    return assignment;
   }
   
   async getUserRoles(userId: string, tenantId: string) {
