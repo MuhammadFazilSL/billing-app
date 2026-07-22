@@ -8,6 +8,7 @@ export interface JwtPayload {
   sub: string;
   email: string;
   tenantId: string;
+  permissions?: string[];
 }
 
 @Injectable()
@@ -39,7 +40,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       if (user.status !== 'ACTIVE') {
         throw new UnauthorizedException('User account is not active');
       }
-      return user;
+      return { ...user, permissions: payload.permissions || [] };
     }
 
     // Check if it's a platform admin
@@ -51,7 +52,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       if (!platformAdmin.isActive) {
         throw new UnauthorizedException('Platform Admin account is not active');
       }
-      return platformAdmin;
+      return { ...platformAdmin, permissions: ['*'] };
     }
 
     throw new UnauthorizedException('User not found or disabled');

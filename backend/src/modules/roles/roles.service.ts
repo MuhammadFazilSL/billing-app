@@ -71,4 +71,88 @@ export class RolesService {
       }
     });
   }
+
+  async getRolePermissions(roleId: string, tenantId: string) {
+    const role = await this.prisma.role.findFirst({
+      where: { id: roleId, tenantId },
+      include: {
+        rolePermissions: {
+          include: { permission: true }
+        }
+      }
+    });
+    if (!role) throw new NotFoundException('Role not found');
+    return role.rolePermissions.map(rp => rp.permission.code);
+  }
+
+  async updateRolePermissions(roleId: string, tenantId: string, permissionCodes: string[]) {
+    const role = await this.prisma.role.findFirst({ where: { id: roleId, tenantId } });
+    if (!role) throw new NotFoundException('Role not found');
+
+    if (role.name === 'Owner' || role.name === 'Admin') {
+      if (permissionCodes.length === 0) {
+        throw new BadRequestException('Cannot remove all permissions from Owner/Admin role');
+      }
+    }
+
+    // Fetch all permission IDs for the provided codes
+    const permissions = await this.prisma.permission.findMany({
+      where: { code: { in: permissionCodes } }
+    });
+
+    // Run in transaction
+    await this.prisma.$transaction(async (tx) => {
+      // Delete existing
+      await tx.rolePermission.deleteMany({
+        where: { roleId }
+      });
+
+      // Insert new
+      if (permissions.length > 0) {
+        await tx.rolePermission.createMany({
+          data: permissions.map(p => ({
+            roleId,
+            permissionId: p.id
+          }))
+        });
+      }
+    });
+
+    return { success: true };
+  }
+
+  async cloneRole(roleId: string, tenantId: string, newName: string, newDescription?: string) {
+    const sourceRole = await this.prisma.role.findFirst({
+      where: { id: roleId, tenantId },
+      include: { rolePermissions: true }
+    });
+    if (!sourceRole) throw new NotFoundException('Source role not found');
+
+    const existingRole = await this.prisma.role.findFirst({
+      where: { tenantId, name: newName }
+    });
+    if (existingRole) throw new BadRequestException(`Role with name ${newName} already exists`);
+
+    return this.prisma.$transaction(async (tx) => {
+      const newRole = await tx.role.create({
+        data: {
+          tenantId,
+          name: newName,
+          description: newDescription || `Cloned from ${sourceRole.name}`,
+          isSystemRole: false
+        }
+      });
+
+      if (sourceRole.rolePermissions.length > 0) {
+        await tx.rolePermission.createMany({
+          data: sourceRole.rolePermissions.map(rp => ({
+            roleId: newRole.id,
+            permissionId: rp.permissionId
+          }))
+        });
+      }
+
+      return newRole;
+    });
+  }
 }

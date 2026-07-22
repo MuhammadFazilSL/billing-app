@@ -36,7 +36,9 @@ export const Login: React.FC = () => {
       });
       
       dispatch(setCredentials({
-        user: profileResponse.data,
+        user: profileResponse.data.user,
+        role: profileResponse.data.role,
+        permissions: profileResponse.data.permissions,
         accessToken,
         refreshToken,
       }));

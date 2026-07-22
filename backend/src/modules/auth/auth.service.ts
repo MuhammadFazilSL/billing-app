@@ -113,14 +113,29 @@ export class AuthService {
         return user;
       });
 
-      return this.generateTokens(result.id, result.email, result.tenantId);
+      return this.generateTokens(result.id, result.email, result.tenantId, []);
     } catch (error: any) {
       throw new InternalServerErrorException('Registration failed: ' + error.message);
     }
   }
 
   async login(dto: LoginDto) {
-    const user = await this.prisma.user.findUnique({ where: { email: dto.email } });
+    const user = await this.prisma.user.findUnique({ 
+      where: { email: dto.email },
+      include: {
+        userRoles: {
+          include: {
+            role: {
+              include: {
+                rolePermissions: {
+                  include: { permission: true }
+                }
+              }
+            }
+          }
+        }
+      }
+    });
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
@@ -134,7 +149,8 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    return this.generateTokens(user.id, user.email, user.tenantId);
+    const permissions = user.isMasterAdmin ? ['*'] : user.userRoles.flatMap(ur => ur.role.rolePermissions.map(rp => rp.permission.code));
+    return this.generateTokens(user.id, user.email, user.tenantId, permissions);
   }
 
   async logout(userId: string, token: string) {
@@ -159,7 +175,22 @@ export class AuthService {
         secret: refreshSecret,
       });
 
-      const user = await this.prisma.user.findUnique({ where: { id: payload.sub } });
+      const user = await this.prisma.user.findUnique({ 
+        where: { id: payload.sub },
+        include: {
+          userRoles: {
+            include: {
+              role: {
+                include: {
+                  rolePermissions: {
+                    include: { permission: true }
+                  }
+                }
+              }
+            }
+          }
+        }
+      });
       if (!user || !user.hashedRefreshToken) {
         throw new UnauthorizedException('Access Denied');
       }
@@ -169,7 +200,8 @@ export class AuthService {
         throw new UnauthorizedException('Access Denied');
       }
 
-      return this.generateTokens(user.id, user.email, user.tenantId);
+      const permissions = user.isMasterAdmin ? ['*'] : user.userRoles.flatMap(ur => ur.role.rolePermissions.map(rp => rp.permission.code));
+      return this.generateTokens(user.id, user.email, user.tenantId, permissions);
     } catch (e) {
       throw new UnauthorizedException('Invalid refresh token');
     }
@@ -182,7 +214,13 @@ export class AuthService {
         tenant: true,
         userRoles: {
           include: {
-            role: true,
+            role: {
+              include: {
+                rolePermissions: {
+                  include: { permission: true }
+                }
+              }
+            }
           }
         }
       }
@@ -190,7 +228,14 @@ export class AuthService {
 
     if (user) {
       const { passwordHash, hashedRefreshToken, ...safeUser } = user;
-      return safeUser;
+      const role = user.userRoles?.[0]?.role;
+      const permissions = user.isMasterAdmin ? ['*'] : (role?.rolePermissions?.map(rp => rp.permission.code) || []);
+      
+      return {
+        user: safeUser,
+        role: role ? { id: role.id, name: role.name } : null,
+        permissions
+      };
     }
 
     const platformAdmin = await this.prisma.platformAdmin.findUnique({
@@ -199,14 +244,18 @@ export class AuthService {
 
     if (platformAdmin) {
       const { password, ...safeAdmin } = platformAdmin;
-      return safeAdmin;
+      return {
+        user: safeAdmin,
+        role: { id: 'super-admin', name: 'SUPER_ADMIN' },
+        permissions: ['*']
+      };
     }
 
     throw new UnauthorizedException('User not found');
   }
 
-  private async generateTokens(userId: string, email: string, tenantId: string | null) {
-    const payload = { sub: userId, email, tenantId };
+  private async generateTokens(userId: string, email: string, tenantId: string | null, permissions: string[] = []) {
+    const payload = { sub: userId, email, tenantId, permissions };
     const refreshSecret = this.configService.get<string>('JWT_REFRESH_SECRET');
 
     const [accessToken, refreshToken] = await Promise.all([

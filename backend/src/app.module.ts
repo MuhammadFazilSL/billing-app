@@ -18,6 +18,7 @@ import { CustomersModule } from './modules/customers/customers.module';
 import { SuppliersModule } from './modules/suppliers/suppliers.module';
 import { EmployeesModule } from './modules/employees/employees.module';
 import { RolesModule } from './modules/roles/roles.module';
+import { PermissionsModule } from './modules/permissions/permissions.module';
 import { InvoicesModule } from './modules/invoices/invoices.module';
 import { PurchasesModule } from './modules/purchases/purchases.module';
 import { ReturnsModule } from './modules/returns/returns.module';
@@ -58,6 +59,7 @@ import { SettingsModule } from './modules/settings/settings.module';
     SuppliersModule,
     EmployeesModule,
     RolesModule,
+    PermissionsModule,
     InvoicesModule,
     PurchasesModule,
     ReturnsModule,

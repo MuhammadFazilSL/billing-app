@@ -12,14 +12,18 @@ export interface User {
 
 export interface AuthState {
   user: User | null;
+  role: { id: string; name: string } | null;
+  permissions: string[];
   accessToken: string | null;
   refreshToken: string | null;
   isAuthenticated: boolean;
-  isLoading: boolean; // Initial check
+  isLoading: boolean;
 }
 
 const initialState: AuthState = {
   user: null,
+  role: null,
+  permissions: [],
   accessToken: localStorage.getItem('accessToken'),
   refreshToken: localStorage.getItem('refreshToken'),
   isAuthenticated: !!localStorage.getItem('accessToken'),
@@ -32,10 +36,12 @@ const authSlice = createSlice({
   reducers: {
     setCredentials: (
       state,
-      action: PayloadAction<{ user: User | null; accessToken: string; refreshToken: string }>
+      action: PayloadAction<{ user: User | null; role?: { id: string; name: string } | null; permissions?: string[]; accessToken: string; refreshToken: string }>
     ) => {
-      const { user, accessToken, refreshToken } = action.payload;
+      const { user, role, permissions, accessToken, refreshToken } = action.payload;
       state.user = user;
+      if (role !== undefined) state.role = role;
+      if (permissions !== undefined) state.permissions = permissions;
       state.accessToken = accessToken;
       state.refreshToken = refreshToken;
       state.isAuthenticated = true;
@@ -44,6 +50,8 @@ const authSlice = createSlice({
     },
     logout: (state) => {
       state.user = null;
+      state.role = null;
+      state.permissions = [];
       state.accessToken = null;
       state.refreshToken = null;
       state.isAuthenticated = false;
