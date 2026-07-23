@@ -30,7 +30,7 @@ async function bootstrap() {
     .setVersion('1.0.0')
     .addBearerAuth()
     .build();
-  
+
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('api/docs', app, document);
 
@@ -45,8 +45,8 @@ async function bootstrap() {
     credentials: true,
   });
 
-  await app.listen(port);
-  console.log(`API cluster running on: http://localhost:${port}/api/v1`);
+  await app.listen(port, '0.0.0.0');
+  console.log(`API started on port ${port}`);
   console.log(`Swagger docs available at: http://localhost:${port}/api/docs`);
 }
 bootstrap();
