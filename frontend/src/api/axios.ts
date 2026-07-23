@@ -3,8 +3,9 @@ import { store } from '../store/store';
 import { logout, setCredentials } from '../features/auth/authSlice';
 
 // Use environment variable or fallback to localhost
-const BASE_URL =
-  import.meta.env.VITE_API_URL || 'http://localhost:4000/api/v1';
+const BASE_URL = import.meta.env.VITE_API_URL
+  ? `${import.meta.env.VITE_API_URL}/api/v1`
+  : 'http://localhost:4000/api/v1';
 
 export const api = axios.create({
   baseURL: BASE_URL,
