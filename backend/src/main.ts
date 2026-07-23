@@ -40,7 +40,10 @@ async function bootstrap() {
 
   // Enable Cross-Origin Resource Sharing (CORS)
   app.enableCors({
-    origin: '*', // Restrict to client origins in production environments
+    origin: [
+      'http://localhost:5173',          // local Vite
+      'https://your-frontend.vercel.app' // production frontend
+    ],// Restrict to client origins in production environments
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   });
